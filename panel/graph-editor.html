@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flow Graph Editor</title>
+    <link href="css/graph-editor.css" rel="stylesheet" />
+  </head>
+  <body class="handle-style-heart">
+    <div class="graph-editor">
+      <header class="graph-editor__header">
+        <span class="graph-editor__title">Flow Graph Editor</span>
+        <span class="graph-editor__menu" aria-hidden="true">
+          <i></i><i></i><i></i>
+        </span>
+        <span id="graphEditorReadout" class="graph-editor__readout"></span>
+      </header>
+
+      <div class="graph-editor__workspace">
+        <nav class="graph-editor__modes" aria-label="Curve type">
+          <button type="button" class="graph-editor__mode is-active" data-editor-mode="bezier" aria-label="Bezier" aria-selected="true" title="Bezier">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21c3 0 7-1 7-8s4-8 11-8" /></svg>
+          </button>
+          <button type="button" class="graph-editor__mode" data-editor-mode="fourkey" aria-label="4-Key" aria-selected="false" title="4-Key">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20C6 20 7 4 12 4S18 20 21 20" /><circle cx="3" cy="20" r="1.5" /><circle cx="12" cy="4" r="1.5" /><circle cx="21" cy="20" r="1.5" /></svg>
+          </button>
+          <button type="button" class="graph-editor__mode" data-editor-mode="custom" aria-label="Custom" aria-selected="false" title="Custom">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="4" cy="20" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="20" cy="4" r="2" /><path d="M4 18c3-3 5-6 8-6s5-3 8-6" /></svg>
+          </button>
+          <button type="button" class="graph-editor__mode" data-editor-mode="elastic" aria-label="Elastic" aria-selected="false" title="Elastic">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21S7 3 10 3s2 12 4 12 1-5 2-5 1 2 2 2 1-1 1-1" /></svg>
+          </button>
+          <button type="button" class="graph-editor__mode" data-editor-mode="bounce" aria-label="Bounce" aria-selected="false" title="Bounce">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18" /><path d="M5 21S5 8 9 8s4 13 4 13 0-8 3-8 3 8 3 8 0-4 2-4" /></svg>
+          </button>
+          <button type="button" class="graph-editor__mode" data-editor-mode="wave" aria-label="Wave" aria-selected="false" title="Wave">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0 4-4 6 0" /></svg>
+          </button>
+          <button type="button" class="graph-editor__mode" data-editor-mode="steps" aria-label="Step" aria-selected="false" title="Step">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h4v-4h4v-4h4V9h4V5" /></svg>
+          </button>
+        </nav>
+
+        <section id="graphEditorStage" class="graph-editor__stage" aria-label="Interactive curve graph">
+          <canvas id="graphEditorCanvas"></canvas>
+          <div class="graph-editor__handles">
+            <button type="button" class="editor-handle" data-editor-handle="A" aria-label="Curve handle A"></button>
+            <button type="button" class="editor-handle" data-editor-handle="B" aria-label="Curve handle B"></button>
+            <button type="button" class="editor-handle" data-editor-handle="C" aria-label="Curve handle C"></button>
+            <button type="button" class="editor-handle" data-editor-handle="D" aria-label="Curve handle D"></button>
+          </div>
+          <div id="graphEditorCoordinates" class="graph-editor__coordinates" aria-hidden="true"></div>
+        </section>
+      </div>
+    </div>
+
+    <script type="text/javascript" src="js/graph-editor.js" charset="utf-8" defer></script>
+  </body>
+</html>

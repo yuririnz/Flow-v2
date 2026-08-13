@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Prime Tools</title>
+  <desc id="desc">Hexagonal Prime Tools mark with an angular P monogram.</desc>
+  <defs>
+    <linearGradient id="edge" x1="24" y1="20" x2="108" y2="112" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset=".42" stop-color="#f5f5f5"/>
+      <stop offset="1" stop-color="#cfcfcf"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <path
+    fill="url(#edge)"
+    filter="url(#glow)"
+    d="M64 8 113 36v56l-49 28-49-28V36L64 8Zm0 15.2L28.2 43.8v40.4L45 93.9V53.4L64 42.5l19 10.9v21.7L69 83.2V64.6L55.8 72.2v33.4L99.8 80V43.8L64 23.2Z"
+  />
+</svg>

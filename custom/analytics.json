@@ -1,0 +1,177 @@
+{
+  "Groups": [
+    {
+      "name": "General",
+      "description": "Information on general Flow features",
+      "reason": "We use this information to know how to prioritize feature development.",
+      "events": [
+        {
+          "id": "Apply Curve",
+          "isSent": "when a curve is applied",
+          "name": "applyCurve",
+          "params": {
+            "curve": "{curve}",
+            "direction": "{direction}",
+            "target": "{target}"
+          }
+        },
+        {
+          "id": "Copy Curve",
+          "isSent": "when a curve is copied",
+          "name": "copyCurve",
+          "params": {
+            "target": "{target}"
+          }
+        },
+        {
+          "id": "Error",
+          "isSent": "when an error occurs",
+          "name": "error",
+          "params": {
+            "description": "{description}"
+          }
+        },
+        {
+          "id": "Preferences",
+          "isSent": "when Flow loads",
+          "name": "preferences",
+          "params": {
+            "alwaysCBForExpressions": "{alwaysCBForExpressions}",
+            "autoApplyCurve": "{autoApplyCurve}",
+            "controlsLocation": "{controlsLocation}",
+            "existingExpressionBehaviour": "{existingExpressionBehaviour}",
+            "invalidOvershootBehaviour": "{invalidOvershootBehaviour}",
+            "lastCurveBehaviour": "{lastCurveBehaviour}",
+            "presetSize": "{presetSize}",
+            "readValueUsesEaseDirection": "{readValueUsesEaseDirection}",
+            "showConfirmationPrompts": "{showConfirmationPrompts}",
+            "showLibraryControls": "{showLibraryControls}",
+            "showTooltips": "{showTooltips}",
+            "userDebug": "{userDebug}",
+
+            "userAcknowledgedDebugMode": "{userAcknowledgedDebugMode}",
+            "userAcknowledgedExpressions": "{userAcknowledgedExpressions}",
+
+            "layout": "{layout}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Graph",
+      "description": "Events related to Flow graph",
+      "reason": "We use this information to know how to prioritize graph development",
+      "events": [
+        {
+          "id": "Edit Bezier Values",
+          "isSent": "when a curve is edited",
+          "name": "editBezierValues"
+        },
+        {
+          "id": "Read Value",
+          "isSent": "when curves are read from AE",
+          "name": "readValue"
+        },
+        {
+          "id": "Save Preset",
+          "isSent": "when a preset is saved",
+          "name": "savePreset"
+        }
+      ]
+    },
+    {
+      "name": "Library",
+      "description": "Events related to Flow libraries",
+      "reason": "We use this information to know how to prioritize library features development",
+      "events": [
+        {
+          "id": "Clear Library",
+          "isSent": "when a library is cleared",
+          "name": "clearLibrary"
+        },
+        {
+          "id": "Create Library",
+          "isSent": "when a library is created",
+          "name": "createLibrary"
+        },
+        {
+          "id": "Delete Library",
+          "isSent": "when a library is deleted",
+          "name": "deleteLibrary"
+        },
+        {
+          "id": "Export Library",
+          "isSent": "when a library is exported",
+          "name": "exportLibrary",
+          "params": {
+            "target": "{target}"
+          }
+        },
+        {
+          "id": "Import Library",
+          "isSent": "when a library is imported",
+          "name": "importLibrary"
+        },
+        {
+          "id": "Rename Library",
+          "isSent": "when a library is renamed",
+          "name": "renameLibrary"
+        }
+      ]
+    },
+    {
+      "name": "Presets",
+      "description": "Events related to Flow presets",
+      "reason": "We use this information to know how to prioritize preset features development",
+      "events": [
+        {
+          "id": "Delete Preset",
+          "isSent": "when a preset is deleted",
+          "name": "deletePreset"
+        },
+        {
+          "id": "Edit Preset Value",
+          "isSent": "when a preset's value is edited",
+          "name": "editPresetValue"
+        },
+        {
+          "id": "Rename Preset",
+          "isSent": "when a preset is renamed",
+          "name": "renamePreset"
+        }
+      ]
+    },
+    {
+      "name": "Preferences",
+      "description": "Events related to Flow preferences",
+      "reason": "We use this information to know how to develop our preferences panel",
+      "events": [
+        {
+          "id": "Open Prefs",
+          "isSent": "when preferences is opened",
+          "name": "prefsOpened"
+        },
+        {
+          "id": "Reset Prefs",
+          "isSent": "when user preferences are reset",
+          "name": "resetPrefs"
+        },
+        {
+          "id": "Reveal KBar Script",
+          "isSent": "when the kbar script is revealed",
+          "name": "revealKBarScript"
+        },
+        {
+          "id": "Reveal Log",
+          "isSent": "when log file is revealed",
+          "name": "revealLog"
+        },
+        {
+          "id": "Reveal Settings",
+          "isSent": "when settings file is revealed",
+          "name": "revealSettings"
+        }
+      ]
+    }
+  ]
+}

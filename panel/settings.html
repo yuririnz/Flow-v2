@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Flow Settings</title>
+
+    <link href="css/_variables.css" rel="stylesheet" />
+    <link href="css/fontawesome/css/fontawesome.css" rel="stylesheet" />
+    <link href="css/fontawesome/css/solid.css" rel="stylesheet" />
+    <link href="css/fontawesome/css/regular.css" rel="stylesheet" />
+    <link href="css/settings.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <main class="settings-window">
+      <aside class="settings-sidebar">
+
+        <nav class="settings-navigation" aria-label="Flow settings">
+          <button class="settings-navigation-item is-active" type="button" data-settings-tab="appearance">
+            <i class="fa-solid fa-palette"></i>
+            <span data-i18n="appearance">Appearance</span>
+          </button>
+          <button class="settings-navigation-item" type="button" data-settings-tab="background">
+            <i class="fa-regular fa-image"></i>
+            <span data-i18n="background">Background</span>
+          </button>
+          <button class="settings-navigation-item" type="button" data-settings-tab="handles">
+            <i class="fa-solid fa-hand-pointer"></i>
+            <span data-i18n="handles">Handles</span>
+          </button>
+          <button class="settings-navigation-item" type="button" data-settings-tab="behavior">
+            <i class="fa-solid fa-sliders"></i>
+            <span data-i18n="behavior">Behavior</span>
+          </button>
+        </nav>
+
+        <button class="settings-sidebar-footer" id="settingsProfileButton" type="button" data-settings-tab="profile">
+          <span class="settings-brand-avatar">
+            <img id="settingsProfileAvatar" src="../leylin.png" alt="" />
+          </span>
+          <span class="settings-brand-copy">
+            <strong id="settingsProfileNameDisplay">leylin</strong>
+            <small id="settingsProfileBioDisplay">Flow Settings</small>
+          </span>
+        </button>
+      </aside>
+
+      <section class="settings-workspace">
+        <header class="settings-workspace-header">
+          <span class="settings-workspace-kicker" data-i18n="flowSettingsKicker">Flow / Settings</span>
+          <h1 id="settingsSectionTitle">Appearance</h1>
+          <p id="settingsSectionDescription">Customize Flow's interface and graph colors.</p>
+        </header>
+
+        <div class="settings-body">
+          <section
+            class="settings-section is-active"
+            data-settings-section="appearance"
+            data-settings-title="Appearance"
+            data-settings-title-key="appearance"
+            data-settings-description="Customize Flow's interface and graph colors."
+            data-settings-description-key="appearanceDescription"
+          >
+            <div class="settings-group">
+              <header class="settings-group-header">
+                <h2 data-i18n="interfaceColors">Interface Colors</h2>
+                <p data-i18n="interfaceColorsHint">Choose the colors used throughout the Flow panel.</p>
+              </header>
+
+              <div class="settings-row" data-setting-row="themeColor">
+                <span data-i18n="uiTheme">UI / Theme Color</span>
+                <button type="button" data-color-edit="themeColor"><span data-i18n="edit">Edit</span></button>
+              </div>
+
+              <div class="settings-row" data-setting-row="graphLineColor">
+                <span data-i18n="graphLine">Graph Line Color</span>
+                <button type="button" data-color-edit="graphLineColor"><span data-i18n="edit">Edit</span></button>
+              </div>
+
+              <div class="settings-row" data-setting-row="handleColor">
+                <span data-i18n="handleNode">Handle &amp; Node Color</span>
+                <button type="button" data-color-edit="handleColor"><span data-i18n="edit">Edit</span></button>
+              </div>
+
+              <div class="settings-row" data-setting-row="homeIndicatorColor">
+                <span data-i18n="homeIndicator">Home Indicator Color</span>
+                <button type="button" data-color-edit="homeIndicatorColor"><span data-i18n="edit">Edit</span></button>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <header class="settings-group-header">
+                <h2 data-i18n="quickPresets">Quick Presets</h2>
+                <p data-i18n="quickPresetsHint">Apply one color across the main Flow interface controls.</p>
+              </header>
+              <div class="settings-swatches" id="settingsSwatches"></div>
+            </div>
+          </section>
+
+          <section
+            class="settings-section"
+            data-settings-section="background"
+            data-settings-title="Background"
+            data-settings-title-key="background"
+            data-settings-description="Configure the extension gradient and graph media."
+            data-settings-description-key="backgroundDescription"
+          >
+            <div class="settings-group">
+              <header class="settings-group-header">
+                <h2 data-i18n="extensionGradient">Extension Background Gradient</h2>
+                <p data-i18n="extensionGradientHint">Blend two colors across the complete Flow panel.</p>
+              </header>
+
+              <div class="settings-row settings-background-color-row" data-setting-row="panelBackgroundColor">
+                <span data-i18n="backgroundColor1">Background Color 1</span>
+                <button type="button" data-color-edit="panelBackgroundColor" data-background-color-edit><span data-i18n="edit">Edit</span></button>
+              </div>
+
+              <div class="settings-row settings-background-color-row" data-setting-row="panelBackgroundColor2">
+                <span data-i18n="backgroundColor2">Background Color 2</span>
+                <button type="button" data-color-edit="panelBackgroundColor2" data-background-color-edit><span data-i18n="edit">Edit</span></button>
+              </div>
+
+              <div class="settings-background-gradient-preview" id="settingsBackgroundGradientPreview" aria-hidden="true"></div>
+
+              <div class="settings-opacity-head">
+                <span data-i18n="gradientDirection">Gradient Direction</span>
+                <b id="settingsBackgroundDirectionValue">0&deg;</b>
+              </div>
+              <input id="settingsBackgroundDirection" class="settings-range" type="range" min="0" max="360" step="1" />
+
+              <div class="settings-opacity-head">
+                <span data-i18n="colourIntensity">Colour Intensity</span>
+                <b id="settingsBackgroundIntensityValue">74%</b>
+              </div>
+              <input id="settingsBackgroundIntensity" class="settings-range" type="range" min="0" max="100" step="1" />
+            </div>
+
+            <div class="settings-group">
+              <header class="settings-group-header settings-group-header-with-action">
+                <div>
+                  <h2 data-i18n="graphBackgroundMedia">Graph Background Media</h2>
+                  <p data-i18n="graphBackgroundMediaHint">Use an image, GIF, or video behind the graph.</p>
+                </div>
+                <button type="button" id="settingsClearBackground" data-i18n="clear">Clear</button>
+              </header>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="useOriginalMedia">Use Original Media Colors</span>
+                <input type="checkbox" id="settingsBackgroundMediaColorEnabled" />
+                <i></i>
+              </label>
+
+              <button class="settings-dropzone" id="settingsDropzone" type="button">
+                <span class="settings-drop-preview" id="settingsDropPreview"></span>
+                <span class="settings-drop-empty" id="settingsDropEmpty">
+                  <i class="fa-regular fa-image"></i>
+                  <b data-i18n="dropMedia" data-i18n-html="true">Drop media here<br />or Browse</b>
+                </span>
+              </button>
+              <input id="settingsFileInput" type="file" accept=".png,.jpg,.jpeg,.gif,.mp4,image/png,image/jpeg,image/gif,video/mp4" />
+
+              <div class="settings-opacity-head">
+                <span data-i18n="opacity">Opacity</span>
+                <b id="settingsOpacityValue">15%</b>
+              </div>
+              <input id="settingsOpacity" class="settings-range" type="range" min="0" max="100" step="1" />
+
+              <p class="settings-tip" data-i18n="mediaTip">Use low-resolution GIFs, videos, or images for optimal performance.</p>
+            </div>
+          </section>
+
+          <section
+            class="settings-section"
+            data-settings-section="handles"
+            data-settings-title="Handles"
+            data-settings-title-key="handles"
+            data-settings-description="Choose the graph handle shape, image, and size."
+            data-settings-description-key="handlesDescription"
+          >
+            <div class="settings-group">
+              <header class="settings-group-header settings-group-header-with-action">
+                <div>
+                  <h2 data-i18n="handleStyle">Handle Style</h2>
+                  <p data-i18n="handleStyleHint">Select a preset shape or upload a custom PNG or GIF.</p>
+                </div>
+                <button type="button" id="settingsClearHandleImage" data-i18n="clearCustom">Clear Custom</button>
+              </header>
+
+              <div class="settings-handle-presets" id="settingsHandlePresets">
+                <button type="button" data-handle-style="heart" aria-label="Heart handle" data-i18n-aria="heartHandle">
+                  <i class="settings-handle-shape is-heart"></i>
+                  <b data-i18n="heart">Heart</b>
+                </button>
+                <button type="button" data-handle-style="circle" aria-label="Circle handle" data-i18n-aria="circleHandle">
+                  <i class="settings-handle-shape is-circle"></i>
+                  <b data-i18n="circle">Circle</b>
+                </button>
+                <button type="button" data-handle-style="square" aria-label="Square handle" data-i18n-aria="squareHandle">
+                  <i class="settings-handle-shape is-square"></i>
+                  <b data-i18n="square">Square</b>
+                </button>
+                <button type="button" data-handle-style="diamond" aria-label="Diamond handle" data-i18n-aria="diamondHandle">
+                  <i class="settings-handle-shape is-diamond"></i>
+                  <b data-i18n="diamond">Diamond</b>
+                </button>
+                <button type="button" data-handle-style="star" aria-label="Star handle" data-i18n-aria="starHandle">
+                  <i class="settings-handle-shape is-star"></i>
+                  <b data-i18n="star">Star</b>
+                </button>
+              </div>
+
+              <button class="settings-handle-dropzone" id="settingsHandleDropzone" type="button">
+                <span class="settings-handle-upload-preview" id="settingsHandlePreview"></span>
+                <span class="settings-handle-upload-empty" id="settingsHandleEmpty">
+                  <i class="fa-regular fa-image"></i>
+                  <b data-i18n="uploadHandle">Upload a PNG or animated GIF handle</b>
+                </span>
+              </button>
+              <input id="settingsHandleFileInput" type="file" accept=".png,.gif,image/png,image/gif" />
+
+              <div class="settings-opacity-head">
+                <span data-i18n="handleSize">Handle Size</span>
+                <b id="settingsHandleSizeValue">14px</b>
+              </div>
+              <input id="settingsHandleSize" class="settings-range" type="range" min="8" max="32" step="1" />
+
+              <div class="settings-opacity-head">
+                <span data-i18n="handleLineThickness">Handle Line Thickness</span>
+                <b id="settingsHandleLineThicknessValue">1px</b>
+              </div>
+              <input id="settingsHandleLineThickness" class="settings-range" type="range" min="0.5" max="4" step="0.25" />
+            </div>
+          </section>
+
+          <section
+            class="settings-section"
+            data-settings-section="behavior"
+            data-settings-title="Behavior"
+            data-settings-title-key="behavior"
+            data-settings-description="Control how Flow responds while you work."
+            data-settings-description-key="behaviorDescription"
+          >
+            <div class="settings-group">
+              <header class="settings-group-header">
+                <h2 data-i18n="panelBehavior">Panel Behavior</h2>
+                <p data-i18n="panelBehaviorHint">Adjust automatic actions and panel visual helpers.</p>
+              </header>
+
+              <div class="settings-language-row">
+                <span class="settings-language-copy">
+                  <b data-i18n="language">Language</b>
+                  <small data-i18n="languageHint">Choose the language used in Flow settings.</small>
+                </span>
+                <select id="settingsLanguage" aria-label="Language" data-i18n-aria="language">
+                  <option value="en" data-i18n="english">English</option>
+                  <option value="zh" data-i18n="mandarin">Mandarin</option>
+                  <option value="th" data-i18n="thai">Thai</option>
+                </select>
+              </div>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="autoApply">Auto Apply</span>
+                <input type="checkbox" id="settingsAutoApply" />
+                <i></i>
+              </label>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="hideHomeIndicator">Hide Home Indicator</span>
+                <input type="checkbox" id="settingsHideHomeIndicator" />
+                <i></i>
+              </label>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="rgbMode">RGB Mode</span>
+                <input type="checkbox" id="settingsRgbMode" />
+                <i></i>
+              </label>
+
+              <div class="settings-language-row settings-background-effect-row">
+                <span class="settings-language-copy">
+                  <b data-i18n="backgroundEffect">Background Effect</b>
+                  <small data-i18n="backgroundEffectHint">Choose the ambient animation shown behind Flow.</small>
+                </span>
+                <select id="settingsBackgroundEffect" aria-label="Background Effect" data-i18n-aria="backgroundEffect">
+                  <option value="snow" data-i18n="snowfall">Snowfall</option>
+                  <option value="rain" data-i18n="rainfall">Rain</option>
+                  <option value="particles" data-i18n="glowingParticles">Particles</option>
+                  <option value="none" data-i18n="effectOff">Off</option>
+                </select>
+              </div>
+            </div>
+          </section>
+          <section
+            class="settings-section"
+            data-settings-section="profile"
+            data-settings-title="Profile"
+            data-settings-title-key="profile"
+            data-settings-description="Customize the profile shown in the Settings sidebar."
+            data-settings-description-key="profileDescription"
+          >
+            <div class="settings-group">
+              <header class="settings-group-header settings-group-header-with-action">
+                <div>
+                  <h2 data-i18n="profileDetails">Profile Details</h2>
+                  <p data-i18n="profileDetailsHint">Change your picture, display name, and bio.</p>
+                </div>
+                <button type="button" id="settingsResetProfile" data-i18n="resetProfile">Reset Profile</button>
+              </header>
+
+              <div class="settings-profile-editor">
+                <div class="settings-profile-image-row">
+                  <button class="settings-profile-avatar-button" id="settingsProfileAvatarButton" type="button" data-i18n-aria="changePhoto" aria-label="Change photo">
+                    <img id="settingsProfileEditorAvatar" src="../leylin.png" alt="" />
+                    <span><i class="fa-solid fa-camera"></i></span>
+                  </button>
+                  <div class="settings-profile-image-copy">
+                    <b data-i18n="profilePicture">Profile Picture</b>
+                    <small data-i18n="profilePictureHint">Upload a PNG, JPG, GIF, or WebP image.</small>
+                    <button type="button" id="settingsClearProfileImage" data-i18n="useDefaultPhoto">Use Default Photo</button>
+                  </div>
+                </div>
+                <input id="settingsProfileFileInput" type="file" accept=".png,.jpg,.jpeg,.gif,.webp,image/png,image/jpeg,image/gif,image/webp" />
+
+                <label class="settings-profile-field">
+                  <span data-i18n="profileName">Name</span>
+                  <input id="settingsProfileName" type="text" maxlength="40" autocomplete="off" spellcheck="false" />
+                </label>
+
+                <label class="settings-profile-field">
+                  <span data-i18n="profileBio">Bio</span>
+                  <textarea id="settingsProfileBio" maxlength="120" rows="3"></textarea>
+                </label>
+
+                <p class="settings-profile-tip" data-i18n="profileAutosave">Profile changes are saved automatically.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script type="text/javascript" src="js/curve-settings-window.js" charset="utf-8" defer></script>
+    <script type="text/javascript" src="js/settings-layout.js" charset="utf-8" defer></script>
+    <script type="text/javascript" src="js/settings-i18n.js" charset="utf-8" defer></script>
+    <script type="text/javascript" src="js/settings-language-dropdown.js" charset="utf-8" defer></script>
+  </body>
+</html>

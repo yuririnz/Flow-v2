@@ -1,0 +1,117 @@
+:root {
+  --ios-home-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --ios-home-reserved-space: calc(22px + var(--ios-home-safe-bottom));
+  --ios-home-indicator-y: 0px;
+  --ios-home-indicator-scale-x: 1;
+  --ios-home-indicator-scale-y: 1;
+  --ios-home-indicator-alpha: 0.82;
+  --ios-home-indicator-color: rgba(255, 255, 255, var(--ios-home-indicator-alpha));
+  --ios-home-indicator-glow: rgba(255, 255, 255, 0.09);
+  --ios-home-container-y: 0px;
+  --ios-home-container-scale: 1;
+  --ios-home-scrim-alpha: 0;
+}
+
+@supports (padding-bottom: max(0px, 1px)) {
+  :root {
+    --ios-home-safe-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+}
+
+body.has-ios-home-indicator {
+  padding-bottom: var(--ios-home-reserved-space);
+}
+
+body.has-ios-home-indicator #container {
+  transform: translate3d(0, var(--ios-home-container-y), 0) scale(var(--ios-home-container-scale));
+  transform-origin: center bottom;
+  transition: transform var(--transition-slow);
+  will-change: transform;
+}
+
+body.ios-home-indicator-dragging #container,
+body.ios-home-indicator-settling #container {
+  transition: none;
+}
+
+.ios-home-indicator {
+  align-items: flex-start;
+  bottom: 0;
+  display: flex;
+  height: var(--ios-home-reserved-space);
+  justify-content: center;
+  left: 0;
+  padding-bottom: var(--ios-home-safe-bottom);
+  pointer-events: none;
+  position: fixed;
+  right: 0;
+  z-index: 10000;
+}
+
+.ios-home-indicator::before {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.46), rgba(0, 0, 0, 0));
+  bottom: 0;
+  content: '';
+  height: 46px;
+  left: 0;
+  opacity: var(--ios-home-scrim-alpha);
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.ios-home-indicator__touch-target {
+  align-items: flex-start;
+  display: flex;
+  height: 34px;
+  justify-content: center;
+  outline: 0;
+  padding-top: 7px;
+  pointer-events: auto;
+  touch-action: none;
+  transform: translate3d(0, var(--ios-home-indicator-y), 0);
+  user-select: none;
+  -webkit-user-select: none;
+  max-width: 190px;
+  width: 100%;
+  will-change: transform;
+}
+
+.ios-home-indicator__bar {
+  background: var(--ios-home-indicator-color);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.26), 0 1px 12px var(--ios-home-indicator-glow);
+  height: 5px;
+  opacity: 1;
+  transform: scaleX(var(--ios-home-indicator-scale-x)) scaleY(var(--ios-home-indicator-scale-y));
+  transform-origin: center;
+  transition: opacity var(--transition-normal);
+  width: 134px;
+  width: clamp(96px, 34vw, 134px);
+  will-change: transform, opacity;
+}
+
+.ios-home-indicator[data-appearance='light'] .ios-home-indicator__bar {
+  background: rgba(0, 0, 0, var(--ios-home-indicator-alpha));
+  box-shadow: 0 0 1px rgba(255, 255, 255, 0.24), 0 1px 10px rgba(0, 0, 0, 0.12);
+}
+
+body.ios-home-indicator-completing .ios-home-indicator__bar {
+  opacity: 0.96;
+}
+
+body.ios-home-indicator-hidden .ios-home-indicator::before {
+  opacity: 0 !important;
+}
+
+body.ios-home-indicator-hidden .ios-home-indicator__bar {
+  opacity: 0 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.has-ios-home-indicator #container,
+  .ios-home-indicator::before {
+    transition: none;
+  }
+}

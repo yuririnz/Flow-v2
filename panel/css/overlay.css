@@ -1,0 +1,32 @@
+#overlay {
+  align-items: center;
+  background-color: var(--color-bg);
+  color: var(--color-text-muted);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-text);
+  font-size: 12px;
+  font-weight: 500;
+  justify-content: center;
+  min-height: 100%;
+  padding: 18px;
+  position: absolute;
+  text-align: center;
+  width: 100%;
+  z-index: 9999;
+}
+
+#overlay a {
+  color: var(--color-accent);
+  cursor: pointer;
+  transition: opacity var(--transition-normal);
+}
+
+#overlay a:hover {
+  opacity: 0.72;
+}
+
+#overlay span {
+  color: var(--color-text);
+  font-weight: 600;
+}

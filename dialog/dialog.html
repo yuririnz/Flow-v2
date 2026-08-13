@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="dialog.css" id="hostStyle" />
+</head>
+
+<body class="flow-about-dialog" onload="init()">
+    <header class="main-header about-profile">
+        <div class="about-avatar-shell">
+            <img class="about-avatar" src="../leylin.png" alt="leylin" />
+        </div>
+        <div class="about-profile-name">leylin</div>
+        <div class="about-profile-role">High tier larper and skidder (CN/TH)</div>
+    </header>
+
+    <nav id="menu" class="inner-block">
+        <!-- You need to switch 'is-active' class when you change page -->
+        <div id="about-nav" class="nav-item">About</div>
+    </nav>
+
+
+
+    <div id="about" class="content">
+
+        <h3 class="inner-block"><span id="extension-name"></span> <span class="current-version"></span></h3>
+
+        <div id="license-block" class="inner-block">
+            <div id="license-info-input">
+                <div id="error-notification-container">
+                    <div id="license-error" class="alert-icon hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                            <path d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+                        </svg>
+                    </div>
+                    <div id="error-title"></div>
+                </div>
+                <div id="error-message"></div>
+                <input id="license-input" type="text" placeholder="Enter license code" class="boxed-input" />
+            </div>
+
+            <div id="license-info" class="hidden">
+                <div id="license-name"></div>
+                <div id="license-type"></div>
+            </div>
+
+            <div id="license-buttons">
+				<input id="license-help-button" type="button" loc-key-value="dialog.btn.getHelp" value="Support" data-url="https://aescripts.com/contact/?direct=1" class="rounded-button open-support-url-button"/>
+                <input id="license-button" type="button" loc-key-value="dialog.btn.license.buy" state="buy" value="Buy License…" class="rounded-button" />
+            </div>
+        </div>
+        <div class="info">
+            <div id="about-info" class="info-content show-scrollbar inner-block">
+                <div class="about-divider about-divider-top"></div>
+                
+                <div class="about-contact-list">
+                  <div class="about-contact-row">
+                    <img class="about-contact-icon about-discord-icon" src="assets/discord.png" alt="Discord" />
+                    <span>Discord: <strong>leylinnnn</strong></span>
+                  </div>
+                  <div class="about-contact-row">
+                    <img class="about-contact-icon" src="assets/telegram.png" alt="Telegram" />
+                    <span>Telegram: <strong>@leylinvfx</strong></span>
+                  </div>
+                </div>
+                
+                <div class="about-divider"></div>
+                
+                <div class="about-credit">
+                  <span>Skidded and Forked from</span>
+                  <strong>Flow v1.5.2 and NeuCurve</strong>
+                  <strong>Motion Tools and PrimeTools</strong>
+                </div>
+                
+                <div class="about-divider"></div>
+                
+                <p class="about-message">
+                  give feedback or report any issue<br />
+                    please contact me on discord.
+                </p>
+            </div>
+        </div>
+
+        <div id="about-footer" class="footer aesp-appBackgroundColor">
+            <div id="analytics">
+                <label class="label"><input id="allow-analytics" type="checkbox" class="checkbox analytics-checkbox" />
+                    <span loc-key="dialog.gather-analytics-checkbox">Gather anonymous analytics</span>
+                </label>
+            </div>
+            <a href="#" id="privacy-policy" class="analytics-icon">
+                <svg width="15" height="15" viewBox="367 823 25 25" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <path d="M378.8,843.2 L381.2,843.2 L381.2,840.8 L378.8,840.8 L378.8,843.2 Z M380,824 C373.376,824 368,829.376 368,836 C368,842.624 373.376,848 380,848 C386.624,848 392,842.624 392,836 C392,829.375999 386.624,824 380,824 Z M380,845.6 C374.708,845.6 370.4,841.292 370.4,836 C370.4,830.708 374.708,826.4 380,826.4 C385.292,826.4 389.6,830.708 389.6,836 C389.6,841.292 385.292,845.6 380,845.6 Z M380,828.8 C377.348,828.8 375.2,830.948 375.2,833.6 L377.6,833.6 C377.6,832.279999 378.679999,831.2 380,831.2 C381.32,831.2 382.4,832.279999 382.4,833.6 C382.4,836 378.8,835.7 378.8,839.6 L381.2,839.6 C381.2,836.9 384.8,836.6 384.8,833.6 C384.8,830.948 382.652,828.8 380,828.8 Z" id="Fill-2" stroke="none" fill-rule="evenodd"></path>
+                </svg>
+            </a>
+            <input id="OK-button" type="button" loc-key-value="dialog.btn.ok" value="OK" class="rounded-button close" />
+        </div>
+    </div>
+
+
+
+    <div id="update-none" class="content hidden">
+        <h3 id="update-info" class="inner-block"><span loc-key="dialog.update.none.BeforeVersionNumber">Version</span> <span class="current-version">0.0.0</span> <span loc-key="dialog.update.none.AfterVersionNumber">is the the latest version</span></h3>
+
+        <div class="info no-border">
+            <div class="info-content show-scrollbar inner-block"></div>
+        </div>
+
+        <div id="update-footer" class="footer aesp-appBackgroundColor">
+            <input type="button" loc-key-value="dialog.btn.close" value="Close" class="rounded-button close" />
+            <input type="button" loc-key-value="dialog.btn.ok" value="OK" class="rounded-button close" />
+        </div>
+    </div>
+
+    <div id="update-check" class="content hidden">
+        <div class="info no-border">
+            <div id="checking-for-updates" class="info-content inner-block">
+                <div class="loader"></div>
+                <div class="checking-for-updates" loc-key="update.check.progress">Checking for updates…</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="update-failed" class="content hidden">
+        <div id="update-info" class="inner-block">
+            <h3 loc-key="update.check.failed">Couldn't check for updates</h3>
+        </div>
+        <div id="update-error-container" class="inner-block">
+            <div class="alert-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                    <path d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+                </svg>
+            </div>
+            <div id="update-notification" class=""></div>
+        </div>
+
+        <div class="info no-border">
+            <div class="info-content show-scrollbar inner-block"></div>
+        </div>
+
+        <div id="update-failed-footer" class="footer aesp-appBackgroundColor">
+            <input type="button" loc-key-value="dialog.btn.close" value="Close" class="rounded-button close" />
+            <input type="button" loc-key-value="dialog.btn.support" value="Support" class="rounded-button support" />
+            <input id="retry-button" type="button" loc-key-value="dialog.btn.retry" value="Retry" class="rounded-button" />
+        </div>
+    </div>
+
+    <div id="update" class="content hidden">
+        <div id="update-info" class="inner-block">
+            <h3><span loc-key="dialog.update.newVersion.BeforeVersionNumber">New version</span> <span id="new-version">0.0.0</span> <span loc-key="dialog.update.newVersion.AfterVersionNumber">available!</span></h3>
+            <div id="update-current-version"><span loc-key="dialog.update.currentVersion.BeforeVersionNumber">You are on version</span> <span class="current-version">0.0.0</span><span loc-key="dialog.update.currentVersion.AfterVersionNumber"></span></div>
+        </div>
+        <div class="info">
+            <div id="update-summary" class="info-content show-scrollbar inner-block"></div>
+        </div>
+
+        <div id="update-footer" class="footer aesp-appBackgroundColor">
+            <div id="remind-options-menu" class="invisible">
+                <div id="0" class="remind-option" loc-key="dialog.update.remind.skipVersion">Skip this version</div>
+                <div id="30" class="remind-option" loc-key="dialog.update.remind.nextMonth">Next Month</div>
+                <div id="7" class="remind-option" loc-key="dialog.update.remind.nextWeek">Next Week</div>
+                <div id="1" class="remind-option" loc-key="dialog.update.remind.tomorrow">Tomorrow</div>
+            </div>
+            <input type="button" loc-key-value="dialog.btn.close" value="Close" class="rounded-button close" />
+            <input id="remind-button" type="button" loc-key-value="dialog.btn.remindMe" value="Remind me" class="rounded-button" />
+            <input id="download-update" type="button" loc-key-value="dialog.btn.download" value="Download" class="rounded-button" />
+        </div>
+    </div>
+
+
+
+    <div id="support" class="content hidden">
+        <div class="inner-block">
+            <label class="label" loc-key="dialog.support.subject.label">Subject</label>
+            <input name="title" id="subject-input" class="single-line-input" type="text"></input>
+            <label class="label" loc-key="dialog.support.email.label">Email</label>
+            <input name="email" id="email-input" class="single-line-input" type="email"></input>
+            <div id="selects">
+                <div id="department">
+                    <label class="label" loc-key="dialog.support.department.label">Department</label>
+                    <select name="department_id" id="dept-input" class="dark">
+                        <option value="1" loc-key="dialog.support.department.customerCare">Customer Care</option>
+                        <option value="26" loc-key="dialog.support.department.inspirationSubmission">Inspiration Submission</option>
+                        <option value="28" loc-key="dialog.support.department.bugReport">Bug Report</option>
+                    </select>
+                </div>
+                <div id="priority">
+                    <label class="label" loc-key="dialog.support.priority.label">Priority</label>
+                    <select name="priority" id="priority-input" class="dark">
+                        <option value="1" loc-key="dialog.support.priority.low">Low</option>
+                        <option value="2" loc-key="dialog.support.priority.medium">Medium</option>
+                        <option value="3" loc-key="dialog.support.priority.high">High</option>
+                        <option value="4" loc-key="dialog.support.priority.emergency">Emergency</option>
+                    </select>
+                </div>
+                <input name="product_id" type="hidden"/>
+            </div>
+            <div id="message-labels">
+                <label class="label" loc-key="dialog.support.message.label">Message</label>
+                <div id="data-message" loc-key="dialog.support.message.systemDataMessage">Anonymous system data will be sent</div>
+            </div>
+        </div>
+        <div class="info inner-block no-border">
+            <div class="info-content">
+                <textarea name="text" id="message-input" rows="5" class="dark"></textarea>
+            </div>
+        </div>
+
+        <div id="support-footer" class="footer no-border aesp-appBackgroundColor">
+            <input type="button" loc-key-value="dialog.btn.close" value="Close" class="rounded-button close" />
+            <input id="send-button" class="rounded-button" type="button" loc-key-value="dialog.btn.support.sendTicket" value="Open in Browser"></input>
+        </div>
+    </div>
+
+</body>
+
+</html>
+
+<script src="js/dialog.js"></script>
+<script src="js/about-brand-overrides.js"></script>

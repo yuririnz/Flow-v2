@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <link href="../panel/css/_variables.css" rel="stylesheet" />
+  <link href="../panel/css/overlay.css" rel="stylesheet" />
+  <link href="./preferences.css" rel="stylesheet" />
+</head>
+
+<body>
+  <div id="overlay"><span>Loading preferences...</span></div>
+
+  <div id="preferences">
+
+    <h1>Appearance</h1>
+
+    <span>Preset size</span>
+    <input id="sliderPresetSize" type="range" class="slider" />
+    <input id="inputPresetSize" type="text" class="sliderValue" />
+
+    <div style="padding-top: 5px; padding-bottom: 5px;">
+      <span>Controls location</span>
+      <select class="styled-select" id="controlsLocation"></select>
+    </div>
+
+    <input type="checkbox" class="styled-checkbox" id="showLibraryControls">
+    <label for="showLibraryControls">Show library controls</label>
+
+    <input type="checkbox" class="styled-checkbox" id="showTooltips">
+    <label for="showTooltips">Show tooltips</label>
+
+    <hr />
+
+    <h1>Behaviour</h1>
+
+    <input type="checkbox" class="styled-checkbox" id="autoApplyCurve">
+    <label for="autoApplyCurve">Auto-apply curve</label>
+
+    <div style="padding-left: 15px;">
+      <input type="radio" id="curve" class="styled-radio" name="modifierPriorityOnAutoApply" value="CURVE">
+      <label for="curve">Keyboard modifiers affect <em>Control points</em></label>
+      <input type="radio" id="direction" class="styled-radio" name="modifierPriorityOnAutoApply" value="DIRECTION">
+      <label for="direction">Keyboard modifiers affect <em>Ease direction</em></label>
+    </div>
+
+    <input type="checkbox" class="styled-checkbox" id="alwaysCBForExpressions">
+    <label for="alwaysCBForExpressions">Use <em>cubicbezier</em> function for expressions</label>
+
+    <input type="checkbox" class="styled-checkbox" id="readValueUsesEaseDirection">
+    <label for="readValueUsesEaseDirection">Use <em>Ease direction</em> when reading keyframes</label>
+
+    <input type="checkbox" class="styled-checkbox" id="showConfirmationPrompts">
+    <label for="showConfirmationPrompts">Show confirmation prompts</label>
+
+    <div style="padding-top: 5px;">
+      <span><em>Apply expression</em> behaviour when expressions exist</span>
+      <select class="styled-select" id="existingExpressionBehaviour"></select>
+    </div>
+
+    <div style="padding-top: 5px;">
+      <span><em>Apply overshoot</em> behaviour on invalid properties</span>
+      <select class="styled-select" id="invalidOvershootBehaviour"></select>
+    </div>
+
+    <div style="padding-top: 5px;">
+      <span>Last curve behaviour</span>
+      <select class="styled-select" id="lastCurveBehaviour"></select>
+    </div>
+
+    <hr />
+
+    <h1>Advanced</h1>
+
+    <input type="checkbox" class="styled-checkbox" id="userDebug">
+    <label for="userDebug">Troubleshooting mode</label>
+
+    <span class="link" id="btn_revealKBarScript">Reveal KBar script file</span>
+    <span class="link" id="btn_revealSettings">Reveal settings file</span>
+    <span class="link" id="btn_revealLog">Reveal log file</span>
+
+    <hr />
+
+    <div class="flexRow">
+      <input type="button" class="button" id="btn_reset" value="Reset" />
+      <input type="button" class="button active" id="btn_close" value="Close" />
+    </div>
+
+  </div>
+
+</body>
+
+</html>
+
+<script src="preferences.js"></script>

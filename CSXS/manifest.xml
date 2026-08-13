@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<ExtensionManifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	Version="5.0"
+	ExtensionBundleId="com.rendertom.flow.v2"
+	ExtensionBundleVersion="2.0.0"
+	ExtensionBundleName="Flow by leylin">
+
+	<ExtensionList>
+		<Extension Id="com.rendertom.flow.v2" Version="2.0.0" />
+		<Extension Id="com.rendertom.flow.v2.about" Version="2.0.0" />
+		<Extension Id="com.rendertom.flow.v2.preferences" Version="2.0.0" />
+		<Extension Id="com.rendertom.flow.v2.settings" Version="2.0.0" />
+		<Extension Id="com.rendertom.flow.v2.graphEditor" Version="2.0.0" />
+	</ExtensionList>
+
+	<ExecutionEnvironment>
+		<HostList>
+			<!-- v17.5 -->
+			<!-- AE release: October 20, 2020 -->
+			<!-- CEP version: 10.0.0 -->
+			<!-- Chromium: 74.0.3729.157 -->
+			<Host Name="AEFT" Version="[17.5,99.9]" />
+		</HostList>
+		<LocaleList>
+			<Locale Code="All"/>
+		</LocaleList>
+		<RequiredRuntimeList>
+			<RequiredRuntime Name="CSXS" Version="6.0"/>
+		</RequiredRuntimeList>
+	</ExecutionEnvironment>
+
+	<DispatchInfoList>
+		<Extension Id="com.rendertom.flow.v2">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./panel/index.html</MainPath>
+					<ScriptPath>./panel/jsx/main.jsx</ScriptPath>
+					<CEFCommandLine>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--allow-file-access-from-files</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--mixed-context</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Panel</Type>
+					<Menu>Flow ♡</Menu>
+					<Geometry>
+						<Size>
+							<Height>584</Height>
+							<Width>268</Width>
+						</Size>
+						<MinSize>
+							<Height>500</Height>
+							<Width>230</Width>
+						</MinSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+
+		<Extension Id="com.rendertom.flow.v2.preferences">
+			<DispatchInfo >
+				<Resources>
+					<MainPath>./preferences/preferences.html</MainPath>
+					<CEFCommandLine>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--allow-file-access-from-files</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--mixed-context</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<!-- Options panel is ALWAYS a dialog -->
+					<Type>ModalDialog</Type>
+					<Geometry>
+						<Size>
+							<Width>330</Width>
+							<Height>682</Height>
+						</Size>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+
+		<Extension Id="com.rendertom.flow.v2.settings">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./panel/settings.html</MainPath>
+					<CEFCommandLine>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--allow-file-access-from-files</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--mixed-context</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Modeless</Type>
+					<Geometry>
+						<Size>
+							<Width>585</Width>
+							<Height>625</Height>
+						</Size>
+						<MaxSize>
+							<Width>585</Width>
+							<Height>625</Height>
+						</MaxSize>
+						<MinSize>
+							<Width>585</Width>
+							<Height>625</Height>
+						</MinSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+
+		<Extension Id="com.rendertom.flow.v2.graphEditor">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./panel/graph-editor.html</MainPath>
+					<CEFCommandLine>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--allow-file-access-from-files</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--mixed-context</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Modeless</Type>
+					<Geometry>
+						<Size>
+							<Width>570</Width>
+							<Height>470</Height>
+						</Size>
+						<MaxSize>
+							<Width>1200</Width>
+							<Height>900</Height>
+						</MaxSize>
+						<MinSize>
+							<Width>420</Width>
+							<Height>320</Height>
+						</MinSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+
+		<Extension Id="com.rendertom.flow.v2.about">
+			<DispatchInfo >
+				<Resources>
+					<MainPath>./dialog/dialog.html</MainPath>
+					<CEFCommandLine>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--allow-file-access-from-files</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Modeless</Type>
+					<Geometry>
+						<Size>
+							<Height>440</Height>
+							<Width>350</Width>
+						</Size>
+						<MaxSize>
+							<Height>500</Height>
+							<Width>350</Width>
+						</MaxSize>
+						<MinSize>
+							<Height>100</Height>
+							<Width>350</Width>
+						</MinSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+			</Extension>
+	</DispatchInfoList>
+</ExtensionManifest>

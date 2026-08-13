@@ -1,0 +1,79 @@
+body.swal2-height-auto {
+  height: 100% !important;
+}
+
+button.swal2-styled {
+  border-radius: var(--radius-pill) !important;
+  box-shadow: none !important;
+  font-family: var(--font-text) !important;
+  font-weight: 600 !important;
+  min-height: 36px !important;
+  padding: 0 18px !important;
+  transition: background-color var(--transition-normal), border-color var(--transition-normal), color var(--transition-normal), opacity var(--transition-normal) !important;
+}
+
+button.swal2-cancel {
+  background-color: var(--color-surface-2) !important;
+  border: 1px solid var(--color-separator) !important;
+  color: var(--color-text-muted) !important;
+}
+
+button.swal2-cancel:hover {
+  background-color: var(--color-surface-hover) !important;
+  border-color: var(--color-separator-strong) !important;
+  color: var(--color-text) !important;
+}
+
+button.swal2-confirm,
+button.swal2-deny {
+  background-color: var(--color-accent) !important;
+  color: var(--color-bg) !important;
+}
+
+button.swal2-confirm:hover,
+button.swal2-deny:hover {
+  opacity: 0.88 !important;
+}
+
+.swal2-modal {
+  backdrop-filter: blur(22px) saturate(130%);
+  -webkit-backdrop-filter: blur(22px) saturate(130%);
+  background-color: rgba(18, 18, 20, 0.92) !important;
+  border: 1px solid var(--color-separator) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-glass) !important;
+  color: var(--color-text) !important;
+  font-family: var(--font-text) !important;
+  font-size: 12px;
+  max-width: 300px;
+}
+
+.swal2-title {
+  color: var(--color-text) !important;
+  font-family: var(--font-display) !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+}
+
+.swal2-html-container,
+.swal2-content {
+  color: var(--color-text-muted) !important;
+}
+
+.swal2-input {
+  background-color: rgba(118, 118, 128, 0.18) !important;
+  border: 1px solid var(--color-separator) !important;
+  border-radius: var(--radius-md) !important;
+  color: var(--color-text) !important;
+  font-family: var(--font-text) !important;
+}
+
+.swal2-input:focus {
+  border-color: var(--color-separator-strong) !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08) !important;
+}
+
+.swal2-icon {
+  border-color: var(--color-separator-strong) !important;
+  color: var(--color-text) !important;
+}

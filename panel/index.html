@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <title>Flow</title>
+
+    <link href="css/_variables.css" rel="stylesheet" />
+    <link href="css/overlay.css" rel="stylesheet" />
+    <link href="css/preset.css" rel="stylesheet" />
+    <link href="css/style.css" rel="stylesheet" />
+    <link href="css/sweetalert2.css" rel="stylesheet">
+    <link href="css/sweetalert2-flow.css" rel="stylesheet">
+    <link href="css/tooltip.css" rel="stylesheet" />
+    <link href="css/home-indicator.css" rel="stylesheet" />
+    <link href="css/prime-tools-dialog.css" rel="stylesheet" />
+    <link href="css/fontawesome/css/fontawesome.css" rel="stylesheet" />
+    <link href="css/fontawesome/css/solid.css" rel="stylesheet" />
+    <link href="css/fontawesome/css/regular.css" rel="stylesheet" />
+  </head>
+
+  <body class="has-ios-home-indicator" ondragover="return false" ondrop="return false">
+    <div id="overlay"><span>Loading Flow...</span></div>
+
+    <div id="container">
+      <svg class="flow-grain" viewBox="0 0 200 200" preserveAspectRatio="none" aria-hidden="true">
+        <filter id="flowNoiseFilter">
+          <feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves="3" stitchTiles="stitch" />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#flowNoiseFilter)" />
+      </svg>
+      <div class="flow-snow" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="flow-rain" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="flow-particles" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+
+      </div>
+      <div id="graphPanel">
+        <div id="curveModeTabs" class="curve-mode-tabs" role="tablist" aria-label="Curve type">
+          <button class="curve-mode-tab is-active" type="button" data-curve-mode="bezier" data-tooltip="Bezier" aria-label="Bezier" aria-selected="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 21c3 0 7-1 7-8s4-8 11-8" />
+            </svg>
+          </button>
+          <button class="curve-mode-tab" type="button" data-curve-mode="fourkey" data-tooltip="4-Key" aria-label="4-Key" aria-selected="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 20C6 20 7 4 12 4S18 20 21 20" />
+              <circle cx="3" cy="20" r="1.5" />
+              <circle cx="12" cy="4" r="1.5" />
+              <circle cx="21" cy="20" r="1.5" />
+            </svg>
+          </button>
+          <button class="curve-mode-tab" type="button" data-curve-mode="custom" data-tooltip="Custom" aria-label="Custom" aria-selected="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="4" cy="20" r="2" />
+              <circle cx="12" cy="12" r="2" />
+              <circle cx="20" cy="4" r="2" />
+              <path d="M4 18c3-3 5-6 8-6s5-3 8-6" />
+            </svg>
+          </button>
+          <button class="curve-mode-tab" type="button" data-curve-mode="elastic" data-tooltip="Elastic" aria-label="Elastic" aria-selected="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 21S7 3 10 3s2 12 4 12 1-5 2-5 1 2 2 2 1-1 1-1" />
+            </svg>
+          </button>
+          <button class="curve-mode-tab" type="button" data-curve-mode="bounce" data-tooltip="Bounce" aria-label="Bounce" aria-selected="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 3v18h18" />
+              <path d="M5 21S5 8 9 8s4 13 4 13 0-8 3-8 3 8 3 8 0-4 2-4" />
+            </svg>
+          </button>
+          <button class="curve-mode-tab" type="button" data-curve-mode="wave" data-tooltip="Wave" aria-label="Wave" aria-selected="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0 4-4 6 0 4-4 6 0 4-4 4 0" />
+            </svg>
+          </button>
+          <button class="curve-mode-tab" type="button" data-curve-mode="steps" data-tooltip="Steps" aria-label="Steps" aria-selected="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 21h4v-4h4v-4h4V9h4V5" />
+            </svg>
+          </button>
+        </div>
+        <div id="graphPanel-top">
+          <div id="canvas-wrapper">
+            <div id="CP1"></div>
+            <div id="CP2"></div>
+          </div>
+          <canvas height="100" width="100" id="canvasLast"></canvas>
+          <canvas height="100" width="100" id="canvas"></canvas>
+          <canvas height="100" width="100" id="curveModePreview" aria-hidden="true"></canvas>
+          <div id="curveModeEndpointStart" class="curve-mode-endpoint is-selected" aria-hidden="true"></div>
+          <div id="curveModeEndpointEnd" class="curve-mode-endpoint" aria-hidden="true"></div>
+          <div id="curveModeHandleA" class="curve-mode-handle" aria-hidden="true"></div>
+          <div id="curveModeHandleB" class="curve-mode-handle" aria-hidden="true"></div>
+          <div id="curveModeHandleC" class="curve-mode-handle" aria-hidden="true"></div>
+          <div id="curveModeHandleD" class="curve-mode-handle" aria-hidden="true"></div>
+          <button type="button" id="btn_expandGraphEditor" class="curve-graph-expand" data-tooltip="Open graph editor" aria-label="Open graph editor">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5" />
+              <path d="M4 9l6-6M20 9l-6-6M4 15l6 6M20 15l-6 6" />
+            </svg>
+          </button>
+        </div>
+        <div id="controls">
+          <div class="flex-row" id="bezierValueRow">
+            <div class="button" id="btn_readValue" data-tooltip="Read values">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            </div>
+            <div class="button" id="btn_speedGraph" data-tooltip="Speed graph" aria-label="Speed graph" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 18C6.8 18 7.8 7 12 7C16.2 7 17.2 18 20 18V20H4Z" />
+              </svg>
+            </div>
+            <div class="button" id="btn_editBezierValues" data-tooltip="Edit bezier values">0, 0, 1, 1</div>
+            <div class="button" id="btn_saveCurve" data-tooltip="Save as preset">
+              <i class="fa-regular fa-star"></i>
+            </div>
+          </div>
+
+          <div class="flex-row" id="applyRow">
+            <div class="flex-row flex-grow" id="applyMainControls">
+              <div class="flex-row flex-grow" id="easeDirectionControl">
+              <input type="radio" id="Out" name="easeDirection" value="2" />
+              <label class="button" for="Out" data-tooltip="Ease out">
+                <svg viewBox="0 0 25 25" aria-hidden="true">
+                  <path
+                    d="M11.8317 23L23 23C23.5523 23 24 22.5523 24 22L24 21.4113C24 21.1478 23.896 20.895 23.7106 20.7077L17.6745 14.6106C16.5171 13.4416 16.5171 11.5584 17.6745 10.3894L23.7106 4.29227C23.896 4.10503 24 3.8522 24 3.58872L24 3C24 2.44772 23.5523 2 23 2L11.8317 2C11.5651 2 11.3095 2.10647 11.1217 2.29577L1.69853 11.7958C1.31183 12.1856 1.31183 12.8144 1.69853 13.2042L11.1217 22.7042C11.3095 22.8935 11.5651 23 11.8317 23Z"
+                  />
+                </svg>
+              </label>
+              <input type="radio" id="Both" name="easeDirection" value="0" checked />
+              <label class="button" for="Both" data-tooltip="Ease">
+                <svg viewBox="0 0 25 25" aria-hidden="true">
+                  <path
+                    d="M23 2H2C1.44772 2 1 2.44772 1 3V3.58579C1 3.851 1.10536 4.10536 1.29289 4.29289L5.5 8.5L7.24589 10.4328C8.2988 11.5984 8.27433 13.3789 7.18979 14.5151L1.27663 20.7102C1.09907 20.8962 1 21.1435 1 21.4006V22C1 22.5523 1.44772 23 2 23H23C23.5523 23 24 22.5523 24 22V21.4006C24 21.1435 23.9009 20.8962 23.7234 20.7102L17.8639 14.5714C16.7574 13.4121 16.7574 11.5879 17.8639 10.4286L23.7234 4.28981C23.9009 4.10379 24 3.85652 24 3.59936V3C24 2.44772 23.5523 2 23 2Z"
+                  />
+                </svg>
+              </label>
+              <input type="radio" id="In" name="easeDirection" value="1" />
+              <label class="button" for="In" data-tooltip="Ease in">
+                <svg viewBox="0 0 25 25" aria-hidden="true">
+                  <path
+                    d="M13.1683 2H2C1.44772 2 1 2.44772 1 3V3.58872C1 3.8522 1.10398 4.10503 1.28935 4.29227L7.32553 10.3894C8.48294 11.5584 8.48294 13.4416 7.32553 14.6106L1.28935 20.7077C1.10398 20.895 1 21.1478 1 21.4113V22C1 22.5523 1.44772 23 2 23H13.1683C13.4349 23 13.6905 22.8935 13.8783 22.7042L23.3015 13.2042C23.6882 12.8144 23.6882 12.1856 23.3015 11.7958L13.8783 2.29577C13.6905 2.10647 13.4349 2 13.1683 2Z"
+                  />
+                </svg>
+              </label>
+              </div>
+              <div class="button big" id="btn_applyValues">Apply</div>
+            </div>
+            <div class="button" id="btn_curveSettings" data-tooltip="Settings">
+              <i class="fa-solid fa-gear"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="divider"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+
+      <div id="libraryPanel">
+        <div id="curvePreviewStrip" aria-hidden="true">
+          <div id="curvePreviewTrack">
+            <div id="curvePreviewTrail"></div>
+            <div id="curvePreviewBall"></div>
+          </div>
+        </div>
+        <div id="libraryIO" class="flex-row">
+          <select id="ddLibraries" class="button flex-grow"></select>
+          <div id="libraryIOButtons" class="flex-row">
+            <div class="button" id="btn_motionToolsMode" data-tooltip="Motion tools" aria-label="Motion tools" aria-pressed="false">
+              <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div class="button" id="btn_expressionMode" data-tooltip="Expression mode" aria-label="Expression mode" aria-pressed="false">
+              <i class="fa-solid fa-code"></i>
+            </div>
+            <div class="button" id="btn_curvePreview" data-tooltip="Preview movement">
+              <i class="fa-solid fa-play"></i>
+            </div>
+            <div class="button" id="btn_newLibrary" data-tooltip="Create new library">
+              <i class="fa-solid fa-plus"></i>
+            </div>
+            <div class="button" id="btn_importLibrary" data-tooltip="Import library">
+              <i class="fa-solid fa-file-import"></i>
+            </div>
+            <div class="button" id="btn_exportLibrary" data-tooltip="Export library">
+              <i class="fa-solid fa-file-export"></i>
+            </div>
+            <div class="button" id="btn_deleteLibrary" data-tooltip="Delete library">
+              <i class="fa-solid fa-trash-can"></i>
+            </div>
+          </div>
+        </div>
+        <div id="curveExpressionPanel" hidden>
+          <div id="curveExpressionParams"></div>
+          <textarea id="curveExpressionCode" spellcheck="false" readonly></textarea>
+          <div id="curveExpressionActions">
+            <button type="button" id="btn_copyExpression">Copy Expression</button>
+            <button type="button" id="btn_importExpression">
+              <i class="fa-regular fa-clipboard"></i>
+              <span>Import</span>
+            </button>
+          </div>
+        </div>
+        <div id="motionToolsPanel" hidden>
+          <div class="motion-tools-top-row">
+            <section class="motion-tools-anchor" aria-label="Anchor point positions">
+            <div class="motion-tools-anchor__grid" role="group" aria-label="Set layer anchor point">
+            <button class="motion-tools-anchor__button" type="button" data-motion-tools-anchor="1" aria-label="Top left anchor" aria-pressed="false">
+              <svg class="motion-tools-anchor__icon" viewBox="0 0 15 14" aria-hidden="true">
+                <path d="M0.5 0H14.5V2H10V9H2.5V13.5H0.5V7V0Z" fill="currentColor" />
+              </svg>
+            </button>
+            <button class="motion-tools-anchor__button" type="button" data-motion-tools-anchor="2" aria-label="Top center anchor" aria-pressed="false">
+              <svg class="motion-tools-anchor__icon" viewBox="0 0 20 10" aria-hidden="true">
+                <path d="M20 0V3H14V10H5.5V3H0V0H20Z" fill="currentColor" />
+              </svg>
+            </button>
+            <button class="motion-tools-anchor__button" type="button" data-motion-tools-anchor="3" aria-label="Top right anchor" aria-pressed="false">
+              <svg class="motion-tools-anchor__icon" viewBox="0 0 14 14" aria-hidden="true">
+                <path d="M13.5 0V14H11.5V9.5H4.5V2H0V0H6.5H13.5Z" fill="currentColor" />
+              </svg>
+            </button>
+            <button class="motion-tools-anchor__button" type="button" data-motion-tools-anchor="4" aria-label="Middle left anchor" aria-pressed="false">
+              <svg class="motion-tools-anchor__icon" viewBox="0 0 10 20" aria-hidden="true">
+                <path d="M0 0H3V6H10V14.5H3V20H0V0Z" fill="currentColor" />
+              </svg>
+            </button>
+            <button class="motion-tools-anchor__button" type="button" data-motion-tools-anchor="5" aria-label="Center anchor" aria-pressed="false">
+              <svg class="motion-tools-anchor__icon" viewBox="0 0 22 22" aria-hidden="true">
+                <path d="M0 10H22V12H0V10ZM10 0H12V22H10V0ZM6 6H16V16H6V6Z" fill="currentColor" />
+              </svg>
+            </button>
+            <button class="motion-tools-anchor__button" type="button" data-motion-tools-anchor="6" aria-label="Middle right anchor" aria-pressed="false">
+              <svg class="motion-tools-anchor__icon" viewBox="0 0 10 20" aria-hidden="true">
+                <path d="M10 20H7V14H0V5.5H7V0H10V20Z" fill="currentColor" />
+              </svg>
+            </button>
+            <button class="motion-tools-anchor__button" type="button" data-motion-tools-anchor="7" aria-label="Bottom left anchor" aria-pressed="false">
+              <svg class="motion-tools-anchor__icon" viewBox="0 0 14 15" aria-hidden="true">
+                <path d="M0.25 14.75V0.75H2.25V5.25H9.25V12.75H13.75V14.75H7.25H0.25Z" fill="currentColor" />
+              </svg>
+            </button>
+            <button class="motion-tools-anchor__button" type="button" data-motion-tools-anchor="8" aria-label="Bottom center anchor" aria-pressed="false">
+              <svg class="motion-tools-anchor__icon" viewBox="0 0 20 10" aria-hidden="true">
+                <path d="M0 10V7H6V0H14.5V7H20V10H0Z" fill="currentColor" />
+              </svg>
+            </button>
+            <button class="motion-tools-anchor__button" type="button" data-motion-tools-anchor="9" aria-label="Bottom right anchor" aria-pressed="false">
+              <svg class="motion-tools-anchor__icon" viewBox="0 0 14 14" aria-hidden="true">
+                <path d="M14 13.5H0V11.5H4.5V4.5H12V0H14V6.5V13.5Z" fill="currentColor" />
+              </svg>
+            </button>
+            </div>
+            </section>
+            <section class="motion-tools-compose" aria-label="Composition and sequence tools">
+              <div class="motion-tools-compose__top" role="group" aria-label="Composition and property tools">
+                <button class="motion-tools-action motion-tools-compose__button" type="button" data-prime-tool="PRE" aria-label="Pre-compose selected layers" title="Pre-compose selected layers">
+                  <svg class="motion-tools-action__icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="3.5" y="3.5" width="11" height="11" rx="2"></rect>
+                    <rect x="9.5" y="9.5" width="11" height="11" rx="2"></rect>
+                    <path d="M7 17h5M9.5 14.5V19.5"></path>
+                  </svg>
+                </button>
+                <button class="motion-tools-action motion-tools-compose__button" type="button" data-prime-tool="UNP" aria-label="Unprecompose selected precompositions" title="Unprecompose selected precompositions">
+                  <svg class="motion-tools-action__icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="6.5" y="6.5" width="11" height="11" rx="2"></rect>
+                    <path d="M9 3H3v6M15 21h6v-6M3.5 8.5l5-5M20.5 15.5l-5 5"></path>
+                  </svg>
+                </button>
+                <button class="motion-tools-action motion-tools-selector" type="button" data-prime-selector="fill" aria-label="Select fill colors" title="Select Fill Color · Alt: Fill and Stroke colors">
+                  <svg class="motion-tools-selector__icon" viewBox="0 0 14 14" aria-hidden="true">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M1 1H13V13H1V1ZM0 14V0H14V14H0ZM12 2H2V12H12V2Z"></path>
+                  </svg>
+                </button>
+                <button class="motion-tools-action motion-tools-selector" type="button" data-prime-selector="stroke" aria-label="Select stroke properties" title="Select Stroke Color · Alt: Width · Shift: Width and Color">
+                  <svg class="motion-tools-selector__icon" viewBox="0 0 14 14" aria-hidden="true">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M13 1H1V13H13V1ZM0 0V14H14V0H0Z"></path>
+                  </svg>
+                </button>
+                <button class="motion-tools-action motion-tools-selector" type="button" data-prime-selector="path" aria-label="Select paths" title="Select Shape Paths · Alt: Mask Paths">
+                  <svg class="motion-tools-selector__icon motion-tools-selector__icon--path" viewBox="0 0 20 10" aria-hidden="true">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M2.91465 2.49597C2.70873 3.07857 2.15311 3.49597 1.5 3.49597C0.671573 3.49597 0 2.8244 0 1.99597C0 1.16754 0.671573 0.495972 1.5 0.495972C2.15311 0.495972 2.70873 0.913375 2.91465 1.49597H7.43858C6.70324 1.73143 6.00235 2.06762 5.35657 2.49597H2.91465ZM8.5 0.795972C8.5 0.630286 8.63431 0.495972 8.8 0.495972H11.2C11.3657 0.495972 11.5 0.630286 11.5 0.795972V1.63781C13.0957 1.94262 14.5701 2.71854 15.6569 3.83912C17.0342 5.21644 17.8574 7.04428 17.9831 8.97627C18.0018 9.26286 17.7672 9.49597 17.48 9.49597C17.1928 9.49597 16.962 9.26282 16.9406 8.97644C16.8167 7.32053 16.1037 5.75675 14.9215 4.57451C13.9757 3.62878 12.7859 2.98333 11.5 2.69951V3.19597C11.5 3.36166 11.3657 3.49597 11.2 3.49597H8.8C8.63431 3.49597 8.5 3.36166 8.5 3.19597V2.69951C7.21413 2.98333 6.02426 3.62878 5.07854 4.57451C3.89629 5.75675 3.18329 7.32053 3.0594 8.97644C3.03798 9.26283 2.80719 9.49597 2.52 9.49597C2.23281 9.49597 1.99824 9.26286 2.01688 8.97627C2.14258 7.04428 2.96582 5.21644 4.34315 3.83912C5.42991 2.71854 6.90431 1.94262 8.5 1.63781V0.795972ZM18.5 3.49597C19.3284 3.49597 20 2.8244 20 1.99597C20 1.16754 19.3284 0.495972 18.5 0.495972C17.8469 0.495972 17.2913 0.913375 17.0854 1.49597H12.5613C13.2966 1.73143 13.9975 2.06762 14.6433 2.49597H17.0854C17.2913 3.07857 17.8469 3.49597 18.5 3.49597Z"></path>
+                  </svg>
+                </button>
+              </div>
+              <div class="motion-tools-sequence-fields">
+                <label class="motion-tools-sequence-field" title="Sequence offset in frames">
+                  <span>NUM:</span>
+                  <input type="number" value="1" step="1" min="1" max="9999" inputmode="numeric" data-prime-sequence-num aria-label="Sequence offset in frames" />
+                </label>
+                <label class="motion-tools-sequence-field" title="Layers per sequence step">
+                  <span>STEP:</span>
+                  <input type="number" value="1" step="1" min="1" max="999" inputmode="numeric" data-prime-sequence-step aria-label="Layers per sequence step" />
+                </label>
+              </div>
+              <div class="motion-tools-sequence-orders" role="group" aria-label="Sequence order">
+                <button class="motion-tools-action motion-tools-sequence-order" type="button" data-prime-sequence-order="align_order" aria-label="Align layers to playhead" aria-pressed="false" title="Align selected layers to the playhead">
+                  <svg class="motion-tools-sequence-order__icon" viewBox="0 0 26 23" aria-hidden="true">
+                    <path d="M5 6H25.74V10.94H5ZM2 6H3V23H2ZM5 12H25.74V16.94H5ZM5 18H25.74V22.94H5ZM6 0L3 4L0 0Z"></path>
+                  </svg>
+                </button>
+                <button class="motion-tools-action motion-tools-sequence-order" type="button" data-prime-sequence-order="downward_order" aria-label="Sequence downward" aria-pressed="false" title="Sequence downward · Alt: cycle the step pattern">
+                  <svg class="motion-tools-sequence-order__icon" viewBox="0 0 10 8" aria-hidden="true">
+                    <path d="M0 0H6.72V1.6H0ZM1 2H7.72V3.6H1ZM2 4H8.72V5.6H2ZM3 6H9.72V7.6H3Z"></path>
+                  </svg>
+                </button>
+                <button class="motion-tools-action motion-tools-sequence-order" type="button" data-prime-sequence-order="upward_order" aria-label="Sequence upward" aria-pressed="false" title="Sequence upward · Alt: cycle the step pattern">
+                  <svg class="motion-tools-sequence-order__icon" viewBox="0 0 10 8" aria-hidden="true">
+                    <path d="M3 0H9.72V1.6H3ZM2 2H8.72V3.6H2ZM1 4H7.72V5.6H1ZM0 6H6.72V7.6H0Z"></path>
+                  </svg>
+                </button>
+                <button class="motion-tools-action motion-tools-sequence-order" type="button" data-prime-sequence-order="random_order" aria-label="Randomize sequence" aria-pressed="false" title="Randomize timing · Alt: random delay from the first layer">
+                  <svg class="motion-tools-sequence-order__icon" viewBox="0 0 10 8" aria-hidden="true">
+                    <path d="M1 0H7.72V1.6H1ZM3 2H9.72V3.6H3ZM0 4H6.72V5.6H0ZM2 6H8.72V7.6H2Z"></path>
+                  </svg>
+                </button>
+              </div>
+            </section>
+          </div>
+          <section class="motion-tools-actions" aria-label="Motion tool shortcuts">
+            <button class="motion-tools-action" type="button" data-prime-tool="FRZ" aria-label="Freeze" title="Freeze">
+              <img class="motion-tools-action__icon" src="files/prime-icons/frz.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="FIT" aria-label="Fit" title="Fit">
+              <img class="motion-tools-action__icon" src="files/prime-icons/fit.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="DSH" aria-label="Dash" title="Dash">
+              <img class="motion-tools-action__icon" src="files/prime-icons/dsh.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="ADJ" aria-label="Adjustment Layer" title="Adjustment Layer">
+              <img class="motion-tools-action__icon" src="files/prime-icons/adj.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="MIR" aria-label="Mirror" title="Mirror">
+              <img class="motion-tools-action__icon" src="files/prime-icons/mir.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="SOL" aria-label="Solid Layer" title="Solid Layer">
+              <img class="motion-tools-action__icon" src="files/prime-icons/sol.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="SHA" aria-label="Shadow" title="Shadow">
+              <img class="motion-tools-action__icon" src="files/prime-icons/sha.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="NUL" aria-label="Null Object" title="Null Object">
+              <img class="motion-tools-action__icon" src="files/prime-icons/none.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="CAM" aria-label="Camera" title="Camera">
+              <img class="motion-tools-action__icon" src="files/prime-icons/cam.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="HUE" aria-label="Hue Saturation" title="Hue Saturation">
+              <img class="motion-tools-action__icon" src="files/prime-icons/hue.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="FILL" aria-label="Fill" title="Fill">
+              <img class="motion-tools-action__icon" src="files/prime-icons/fill.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="TINT" aria-label="Tint" title="Tint">
+              <img class="motion-tools-action__icon" src="files/prime-icons/tint.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="BLUR" aria-label="Blur" title="Blur">
+              <img class="motion-tools-action__icon" src="files/prime-icons/blur.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="LUM" aria-label="Lumetri Color" title="Lumetri Color">
+              <img class="motion-tools-action__icon" src="files/prime-icons/lum.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="CURV" aria-label="Curves" title="Curves">
+              <img class="motion-tools-action__icon" src="files/prime-icons/curv.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action motion-tools-secret" type="button" data-motion-tools-secret aria-label="secret from leylin!" title="secret from leylin!">
+              <img class="motion-tools-secret__icon" src="../secret.png" alt="" aria-hidden="true" />
+            </button>
+          </section>
+          <audio id="motionToolsSecretAudio" src="../nyaa.mp3" preload="auto" hidden></audio>
+        </div>
+        <div id="library"></div>
+      </div>
+    </div>
+    <div id="iosHomeIndicator" class="ios-home-indicator" data-target-page="home.html">
+      <div class="ios-home-indicator__touch-target" role="button" aria-label="Swipe up" tabindex="0">
+        <div class="ios-home-indicator__bar"></div>
+      </div>
+    </div>
+    <script type="text/javascript" src="js/graph-color-patch.js" charset="utf-8"></script>
+    <script type="text/javascript" src="js/panel-menu.js" charset="utf-8" defer></script>
+    <script type="text/javascript" src="js/panel.js" charset="utf-8" defer></script>
+    <script type="text/javascript" src="js/prime-tools.js" charset="utf-8" defer></script>
+    <script type="text/javascript" src="js/curve-types.js" charset="utf-8" defer></script>
+    <script type="text/javascript" src="js/library-dropdown.js" charset="utf-8" defer></script>
+    <script type="text/javascript" src="js/home-indicator.js" charset="utf-8" defer></script>
+  </body>
+</html>

@@ -1,0 +1,204 @@
+.prime-solid-color-overlay {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.68);
+  display: flex;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  justify-content: center;
+  padding: 14px;
+  position: fixed;
+  z-index: 100000;
+}
+
+.prime-solid-color-dialog,
+.prime-solid-color-dialog * {
+  box-sizing: border-box;
+}
+
+.prime-solid-color-dialog {
+  animation: prime-solid-popup-show 0.3s;
+  background: radial-gradient(circle at 85% 0%, rgba(255, 255, 255, 0.07), transparent 42%), linear-gradient(145deg, #171719, #0d0d0f 72%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.72), inset 0 1px rgba(255, 255, 255, 0.035);
+  color: #f7f7f8;
+  font-family: Inter, Arial, sans-serif;
+  max-width: 290px;
+  overflow: hidden;
+  padding: 18px;
+  width: 100%;
+}
+
+.prime-solid-color-dialog__header {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+}
+
+.prime-solid-color-dialog__eyebrow {
+  color: rgba(255, 255, 255, 0.46);
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  margin-bottom: 5px;
+}
+
+.prime-solid-color-dialog h2 {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.prime-solid-color-dialog__close {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  display: flex;
+  font-size: 18px;
+  height: 28px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0 0 2px;
+  width: 28px;
+}
+
+.prime-solid-color-dialog__close:hover {
+  background: rgba(255, 255, 255, 0.11);
+  color: #fff;
+}
+
+.prime-solid-color-dialog__description {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 10px;
+  line-height: 1.45;
+  margin: 10px 0 16px;
+}
+
+.prime-solid-color-dialog__picker {
+  align-items: stretch;
+  display: grid;
+  gap: 9px;
+  grid-template-columns: 58px minmax(0, 1fr);
+}
+
+.prime-solid-color-dialog__swatch {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  cursor: pointer;
+  height: 48px;
+  overflow: hidden;
+  padding: 3px;
+  width: 58px;
+}
+
+.prime-solid-color-dialog__swatch::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.prime-solid-color-dialog__swatch::-webkit-color-swatch {
+  border: 0;
+  border-radius: 6px;
+}
+
+.prime-solid-color-dialog__hex {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 7px 10px;
+}
+
+.prime-solid-color-dialog__hex.is-invalid {
+  border-color: rgba(255, 92, 92, 0.8);
+  box-shadow: 0 0 0 2px rgba(255, 72, 72, 0.09);
+}
+
+.prime-solid-color-dialog__hex span {
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  margin-bottom: 2px;
+}
+
+.prime-solid-color-dialog__hex input {
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  min-width: 0;
+  outline: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.prime-solid-color-dialog__actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1.25fr;
+  margin-top: 16px;
+}
+
+.prime-solid-color-dialog__button {
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 9px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  height: 34px;
+}
+
+.prime-solid-color-dialog__button.is-secondary {
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.prime-solid-color-dialog__button.is-primary {
+  background: #f4f4f5;
+  border-color: #fff;
+  color: #111113;
+}
+
+.prime-solid-color-dialog__button:hover {
+  filter: brightness(1.1);
+}
+
+.prime-solid-color-dialog button:focus,
+.prime-solid-color-dialog input:focus {
+  outline: none;
+}
+@keyframes prime-solid-popup-show {
+  0% {
+    transform: scale(0.7);
+  }
+
+  45% {
+    transform: scale(1.05);
+  }
+
+  80% {
+    transform: scale(0.95);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prime-solid-color-dialog {
+    animation: none;
+  }
+}
