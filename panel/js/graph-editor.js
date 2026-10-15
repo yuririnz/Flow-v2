@@ -108,8 +108,8 @@
       observer.observe(els.stage);
     }
 
-    window.setInterval(syncStateFromFile, 180);
-    window.setInterval(syncSettings, 650);
+    window.setInterval(syncStateFromFile, 260);
+    window.setInterval(syncSettings, 900);
     dispatchCepEvent(READY_EVENT, '');
   }
 
@@ -508,7 +508,8 @@
       revision: state.revision,
       mode: core.mode,
       bezierValues: core.bezierValues,
-      params: core.params
+      params: core.params,
+      interactionActive: !!state.drag || !!state.clickAnimation
     };
   }
 
@@ -753,6 +754,10 @@
   function updateRgbAnimation() {
     if (state.settings.rgbMode && !state.rgbFrame) {
       var tick = function (now) {
+        if (!state.settings.rgbMode) {
+          state.rgbFrame = null;
+          return;
+        }
         state.rgbHue = now * 0.055 % 360;
         updateActiveColors();
         render();

@@ -104,7 +104,7 @@
     tabButtons[i].addEventListener('keydown', function (event) {
       var key = event.key || event.keyCode;
       var currentName = event.currentTarget.getAttribute('data-settings-tab');
-      var order = ['appearance', 'background', 'handles', 'behavior', 'profile'];
+      var order = ['appearance', 'background', 'handles', 'flow-page', 'behavior', 'profile'];
       var currentIndex = order.indexOf(currentName);
       var nextIndex = currentIndex;
 

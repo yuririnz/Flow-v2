@@ -178,6 +178,12 @@
         </div>
         <div id="controls">
           <div class="flex-row" id="bezierValueRow">
+            <button type="button" id="btn_undoGraph" class="curve-graph-undo" data-tooltip="Undo graph edit" aria-label="Undo graph edit" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 7H4V3" />
+                <path d="M4 7c2.1-2.5 5.1-3.8 8.2-3.3 4 .6 7 4.1 7 8.3a8 8 0 0 1-8 8c-3.4 0-6.3-2.1-7.5-5.1" />
+              </svg>
+            </button>
             <div class="button" id="btn_readValue" data-tooltip="Read values">
               <i class="fa-solid fa-arrow-right-to-bracket"></i>
             </div>
@@ -247,8 +253,16 @@
             <div class="button" id="btn_expressionMode" data-tooltip="Expression mode" aria-label="Expression mode" aria-pressed="false">
               <i class="fa-solid fa-code"></i>
             </div>
-            <div class="button" id="btn_curvePreview" data-tooltip="Preview movement">
+            <div class="button" id="btn_curvePreview" data-tooltip="Preview movement" aria-label="Preview movement" aria-pressed="false" role="button" tabindex="0">
               <i class="fa-solid fa-play"></i>
+            </div>
+            <div class="button" id="btn_emojiBrowserMode" data-tooltip="Emoji browser" aria-label="Emoji browser" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="8.25" />
+                <circle cx="9" cy="10" r="0.9" class="emoji-browser-mode__eye" />
+                <circle cx="15" cy="10" r="0.9" class="emoji-browser-mode__eye" />
+                <path d="M8.5 14c1 1.35 2.15 2 3.5 2s2.5-.65 3.5-2" />
+              </svg>
             </div>
             <div class="button" id="btn_newLibrary" data-tooltip="Create new library">
               <i class="fa-solid fa-plus"></i>
@@ -275,6 +289,42 @@
             </button>
           </div>
         </div>
+        <section id="emojiBrowserPanel" aria-label="Emoji browser" hidden>
+          <div class="emoji-browser__controls">
+            <label class="emoji-browser__search" for="emojiSearchInput">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="10.8" cy="10.8" r="6.3" />
+                <path d="m15.5 15.5 4 4" />
+              </svg>
+              <input id="emojiSearchInput" type="search" autocomplete="off" spellcheck="false" placeholder="Search emoji" />
+              <button id="emojiSearchClear" type="button" aria-label="Clear emoji search" hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m8 8 8 8M16 8l-8 8" />
+                </svg>
+              </button>
+            </label>
+            <div id="emojiCategoryRow" class="emoji-browser__categories" role="tablist" aria-label="Emoji categories"></div>
+          </div>
+          <div class="emoji-browser__summary">
+            <span id="emojiResultCount">Loading emoji…</span>
+            <span id="emojiStatus" role="status" aria-live="polite"></span>
+          </div>
+          <div id="emojiViewport" class="emoji-browser__viewport" tabindex="0" aria-label="Emoji results">
+            <div id="emojiVirtualSpacer" class="emoji-browser__spacer">
+              <div id="emojiGrid" class="emoji-browser__grid" role="list"></div>
+            </div>
+            <div id="emojiEmptyState" class="emoji-browser__empty" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="8" />
+                <circle cx="9.2" cy="10.3" r="0.8" />
+                <circle cx="14.8" cy="10.3" r="0.8" />
+                <path d="M9 16c.9-1 1.9-1.5 3-1.5s2.1.5 3 1.5" />
+              </svg>
+              <strong>No emoji found</strong>
+              <span>Try another name or category.</span>
+            </div>
+          </div>
+        </section>
         <div id="motionToolsPanel" hidden>
           <div class="motion-tools-top-row">
             <section class="motion-tools-anchor" aria-label="Anchor point positions">
@@ -437,8 +487,76 @@
             <button class="motion-tools-action" type="button" data-prime-tool="CURV" aria-label="Curves" title="Curves">
               <img class="motion-tools-action__icon" src="files/prime-icons/curv.svg" alt="" aria-hidden="true" />
             </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="TWX" aria-label="Twixtor Pro" title="Twixtor Pro">
+              <img class="motion-tools-action__icon" src="files/prime-icons/twx.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="DGL" aria-label="Deep Glow" title="Deep Glow · Prefers version 2">
+              <img class="motion-tools-action__icon" src="files/prime-icons/dgl.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="TMR" aria-label="Time Remap" title="Enable Time Remap">
+              <img class="motion-tools-action__icon" src="files/prime-icons/tmr.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="OFL" aria-label="Optical Flares" title="Optical Flares">
+              <img class="motion-tools-action__icon" src="files/prime-icons/ofl.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="EXP" aria-label="Exposure" title="Exposure">
+              <img class="motion-tools-action__icon" src="files/prime-icons/exp.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="HLF" aria-label="S Halftone" title="S_Halftone">
+              <img class="motion-tools-action__icon" src="files/prime-icons/hlf.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="GRN" aria-label="S Grain" title="S_Grain">
+              <img class="motion-tools-action__icon" src="files/prime-icons/grn.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="BNW" aria-label="Black and White" title="Black &amp; White">
+              <img class="motion-tools-action__icon" src="files/prime-icons/bnw.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="UNM" aria-label="Unmult" title="Unmult">
+              <img class="motion-tools-action__icon" src="files/prime-icons/unm.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="INV" aria-label="Invert" title="Invert">
+              <img class="motion-tools-action__icon" src="files/prime-icons/inv.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="LKS" aria-label="Magic Bullet Looks" title="Magic Bullet Looks">
+              <img class="motion-tools-action__icon" src="files/prime-icons/lks.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="KEY" aria-label="Keylight" title="Keylight">
+              <img class="motion-tools-action__icon" src="files/prime-icons/key.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="TRN" aria-label="Transform" title="Transform">
+              <img class="motion-tools-action__icon" src="files/prime-icons/trn.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="BMC" aria-label="S Blur Mo Curves" title="S_BlurMoCurves">
+              <img class="motion-tools-action__icon" src="files/prime-icons/bmc.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="TUR" aria-label="Turbulent Displace" title="Turbulent Displace">
+              <img class="motion-tools-action__icon" src="files/prime-icons/tur.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="FLK" aria-label="S Flicker" title="S_Flicker">
+              <img class="motion-tools-action__icon" src="files/prime-icons/flk.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="RSMB" aria-label="ReelSmart Motion Blur" title="RSMB">
+              <img class="motion-tools-action__icon" src="files/prime-icons/rsmb.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="HEAT" aria-label="Universe Heatwave" title="uni.Heatwave">
+              <img class="motion-tools-action__icon" src="files/prime-icons/heat.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="BCC" aria-label="BCC Ripple" title="BCC Ripple">
+              <img class="motion-tools-action__icon" src="files/prime-icons/bcc.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="LSW" aria-label="CC Light Sweep" title="CC Light Sweep">
+              <img class="motion-tools-action__icon" src="files/prime-icons/lsw.svg" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action" type="button" data-prime-tool="SHK" aria-label="S Shake" title="S_Shake">
+              <img class="motion-tools-action__icon" src="files/prime-icons/shk.svg" alt="" aria-hidden="true" />
+            </button>
             <button class="motion-tools-action motion-tools-secret" type="button" data-motion-tools-secret aria-label="secret from leylin!" title="secret from leylin!">
               <img class="motion-tools-secret__icon" src="../secret.png" alt="" aria-hidden="true" />
+            </button>
+            <button class="motion-tools-action motion-tools-customize" type="button" data-motion-tools-customize aria-label="Customize Motion Tools" title="Show or hide Motion Tools" draggable="false">
+              <svg class="motion-tools-action__icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
             </button>
           </section>
           <audio id="motionToolsSecretAudio" src="../nyaa.mp3" preload="auto" hidden></audio>
@@ -454,9 +572,12 @@
     <script type="text/javascript" src="js/graph-color-patch.js" charset="utf-8"></script>
     <script type="text/javascript" src="js/panel-menu.js" charset="utf-8" defer></script>
     <script type="text/javascript" src="js/panel.js" charset="utf-8" defer></script>
+    <script type="text/javascript" src="js/reorder-motion.js" charset="utf-8" defer></script>
     <script type="text/javascript" src="js/prime-tools.js" charset="utf-8" defer></script>
     <script type="text/javascript" src="js/curve-types.js" charset="utf-8" defer></script>
+    <script type="text/javascript" src="js/emoji-browser.js" charset="utf-8" defer></script>
     <script type="text/javascript" src="js/library-dropdown.js" charset="utf-8" defer></script>
+    <script type="text/javascript" src="js/preset-manager.js" charset="utf-8" defer></script>
     <script type="text/javascript" src="js/home-indicator.js" charset="utf-8" defer></script>
   </body>
 </html>

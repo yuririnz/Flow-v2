@@ -2244,6 +2244,10 @@ button.settings-sidebar-footer {
   line-height: 13px;
 }
 
+.settings-toggle-row--described {
+  min-height: 68px;
+}
+
 #settingsLanguage {
   background-color: hsl(var(--sh-background));
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
@@ -2578,4 +2582,91 @@ button.settings-sidebar-footer {
   bottom: calc(100% + 4px);
   top: auto;
   transform-origin: bottom left;
+}
+
+.settings-shortcut-control {
+  align-items: center;
+  display: flex;
+  flex: 0 0 160px;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+#settingsApplyShortcut,
+#settingsResetApplyShortcut {
+  background: hsl(var(--sh-background));
+  border: 1px solid hsl(var(--sh-input));
+  border-radius: calc(var(--sh-radius) - 2px);
+  color: hsl(var(--sh-foreground));
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  height: 34px;
+  outline: none;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+#settingsApplyShortcut {
+  flex: 1 1 auto;
+  min-width: 112px;
+  padding: 0 10px;
+}
+
+#settingsResetApplyShortcut {
+  align-items: center;
+  display: flex;
+  flex: 0 0 34px;
+  justify-content: center;
+  padding: 0;
+  width: 34px;
+}
+
+#settingsResetApplyShortcut svg {
+  height: 14px;
+  width: 14px;
+}
+
+#settingsResetApplyShortcut path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+#settingsApplyShortcut:hover,
+#settingsApplyShortcut:focus-visible,
+#settingsResetApplyShortcut:hover,
+#settingsResetApplyShortcut:focus-visible {
+  background: hsl(var(--sh-accent) / 0.55);
+  border-color: hsl(var(--sh-ring) / 0.42);
+}
+
+#settingsApplyShortcut.is-recording {
+  background: hsl(var(--sh-accent));
+  border-color: hsl(var(--sh-ring) / 0.62);
+  color: hsl(var(--sh-accent-foreground));
+}
+
+.settings-media-status {
+  border-top: 1px solid hsl(var(--sh-border));
+  color: hsl(var(--sh-muted-foreground));
+  display: none;
+  font-size: 9px;
+  line-height: 14px;
+  margin: 0;
+  padding: 10px 16px 12px;
+}
+
+.settings-media-status.is-visible {
+  display: block;
+}
+
+.settings-media-status.is-error {
+  color: #fca5a5;
+}
+
+.settings-media-status.is-warning {
+  color: #fde68a;
 }

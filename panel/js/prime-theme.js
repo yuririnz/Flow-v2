@@ -182,6 +182,10 @@
     }
 
     function tick(now) {
+      if (!activeSettings.rgbMode) {
+        rgbFrame = null;
+        return;
+      }
       applyThemeColor(hslToHex(now * 0.055 % 360, 100, 64));
       rgbFrame = window.requestAnimationFrame(tick);
     }
@@ -226,7 +230,7 @@
 
     window.setInterval(function () {
       applyRawSettings(readSettingsRaw());
-    }, 700);
+    }, 1000);
   }
 
   if (document.readyState === 'loading') {

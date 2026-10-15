@@ -10,7 +10,35 @@
   var activeColorKey = '';
   var activeEditor = null;
   var profileSaveTimer = null;
+  var shortcutRecording = false;
+  var previewMedia = null;
   var els = {};
+
+  function getDefaultFlowPageVisibility() {
+    return {
+      easeOut: true,
+      ease: true,
+      easeIn: true,
+      motionTools: true,
+      expressionMode: true,
+      previewButton: true,
+      emojiBrowser: true,
+      previewBar: true
+    };
+  }
+
+  function mergeFlowPageVisibility(value) {
+    var defaults = getDefaultFlowPageVisibility();
+    var incoming = value || {};
+
+    for (var key in defaults) {
+      if (Object.prototype.hasOwnProperty.call(defaults, key)) {
+        defaults[key] = incoming[key] !== false;
+      }
+    }
+
+    return defaults;
+  }
 
   function getDefaultSettings() {
     return {
@@ -42,11 +70,17 @@
       disableSnowflake: false,
       rgbMode: false,
       autoApply: false,
+      liquidGlassApply: false,
+      motionToolTextLabels: false,
+      placeNewNullAtTop: false,
+      applyShortcutKey: 'Alt',
+      flowPageVisibility: getDefaultFlowPageVisibility(),
       background: {
         kind: '',
         src: '',
         name: '',
-        opacity: 15
+        opacity: 15,
+        size: 0
       }
     };
   }
@@ -93,11 +127,17 @@
       disableSnowflake: backgroundEffect === 'none',
       rgbMode: !!incoming.rgbMode,
       autoApply: !!incoming.autoApply,
+      liquidGlassApply: !!incoming.liquidGlassApply,
+      motionToolTextLabels: !!incoming.motionToolTextLabels,
+      placeNewNullAtTop: !!incoming.placeNewNullAtTop,
+      applyShortcutKey: normalizeApplyShortcutKey(incoming.applyShortcutKey || defaults.applyShortcutKey),
+      flowPageVisibility: mergeFlowPageVisibility(incoming.flowPageVisibility),
       background: {
         kind: incoming.background && incoming.background.kind || defaults.background.kind,
         src: incoming.background && incoming.background.src || defaults.background.src,
         name: incoming.background && incoming.background.name || defaults.background.name,
-        opacity: typeof (incoming.background && incoming.background.opacity) === 'number' ? incoming.background.opacity : defaults.background.opacity
+        opacity: typeof (incoming.background && incoming.background.opacity) === 'number' ? incoming.background.opacity : defaults.background.opacity,
+        size: Math.max(0, Number(incoming.background && incoming.background.size) || 0)
       }
     };
   }
@@ -118,6 +158,37 @@
     value = String(value || '').toLowerCase();
 
     return value === 'zh' || value === 'th' ? value : 'en';
+  }
+
+  function normalizeApplyShortcutKey(value) {
+    value = String(value || 'Alt');
+
+    if (value === ' ' || value === 'Spacebar') {
+      return 'Space';
+    }
+
+    if (value === 'Ctrl') {
+      return 'Control';
+    }
+
+    if (value === 'OS') {
+      return 'Meta';
+    }
+
+    if (value.length === 1) {
+      return value.toUpperCase();
+    }
+
+    if (/^(Alt|Control|Shift|Meta|Enter|Space|Tab|Backspace|Delete|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|F(?:[1-9]|1[0-2]))$/.test(value)) {
+      return value;
+    }
+
+    return 'Alt';
+  }
+
+  function getShortcutDisplayName(value) {
+    value = normalizeApplyShortcutKey(value);
+    return value === 'Control' ? 'Ctrl' : value === 'Meta' ? 'Win' : value;
   }
 
   function normalizeBackgroundEffect(value, disableSnowflake) {
@@ -313,6 +384,13 @@
     els.resetProfile = document.getElementById('settingsResetProfile');
     els.language = document.getElementById('settingsLanguage');
     els.autoApply = document.getElementById('settingsAutoApply');
+    els.applyShortcut = document.getElementById('settingsApplyShortcut');
+    els.applyShortcutValue = document.getElementById('settingsApplyShortcutValue');
+    els.resetApplyShortcut = document.getElementById('settingsResetApplyShortcut');
+    els.liquidGlassApply = document.getElementById('settingsLiquidGlassApply');
+    els.motionToolTextLabels = document.getElementById('settingsMotionToolTextLabels');
+    els.placeNewNullAtTop = document.getElementById('settingsPlaceNewNullAtTop');
+    els.flowPageVisibility = document.querySelectorAll('[data-flow-page-visibility]');
     els.hideHomeIndicator = document.getElementById('settingsHideHomeIndicator');
     els.backgroundEffect = document.getElementById('settingsBackgroundEffect');
     els.rgbMode = document.getElementById('settingsRgbMode');
@@ -340,6 +418,7 @@
     els.clearBackground = document.getElementById('settingsClearBackground');
     els.opacity = document.getElementById('settingsOpacity');
     els.opacityValue = document.getElementById('settingsOpacityValue');
+    els.mediaStatus = document.getElementById('settingsMediaStatus');
     els.colorEditButtons = document.querySelectorAll('[data-color-edit]');
 
     loadSettings();
@@ -388,10 +467,55 @@
 
     bindProfileEvents();
 
+    for (var visibilityIndex = 0; visibilityIndex < els.flowPageVisibility.length; visibilityIndex++) {
+      els.flowPageVisibility[visibilityIndex].addEventListener('change', function (event) {
+        var key = event.currentTarget.getAttribute('data-flow-page-visibility');
+
+        if (Object.prototype.hasOwnProperty.call(settings.flowPageVisibility, key)) {
+          settings.flowPageVisibility[key] = event.currentTarget.checked;
+          saveSettings();
+        }
+      });
+    }
+
     els.autoApply.addEventListener('change', function () {
       settings.autoApply = els.autoApply.checked;
       saveSettings();
     });
+
+    if (els.applyShortcut) {
+      els.applyShortcut.addEventListener('click', startShortcutRecording);
+    }
+
+    if (els.resetApplyShortcut) {
+      els.resetApplyShortcut.addEventListener('click', function () {
+        stopShortcutRecording();
+        settings.applyShortcutKey = 'Alt';
+        saveSettings();
+        refreshApplyShortcut();
+      });
+    }
+
+    if (els.liquidGlassApply) {
+      els.liquidGlassApply.addEventListener('change', function () {
+        settings.liquidGlassApply = els.liquidGlassApply.checked;
+        saveSettings();
+      });
+    }
+
+    if (els.motionToolTextLabels) {
+      els.motionToolTextLabels.addEventListener('change', function () {
+        settings.motionToolTextLabels = els.motionToolTextLabels.checked;
+        saveSettings();
+      });
+    }
+
+    if (els.placeNewNullAtTop) {
+      els.placeNewNullAtTop.addEventListener('change', function () {
+        settings.placeNewNullAtTop = els.placeNewNullAtTop.checked;
+        saveSettings();
+      });
+    }
 
     if (els.language) {
       els.language.addEventListener('change', function () {
@@ -401,6 +525,8 @@
         if (window.FlowSettingsI18n && typeof window.FlowSettingsI18n.apply === 'function') {
           window.FlowSettingsI18n.apply(settings.language);
         }
+
+        refreshApplyShortcut();
       });
     }
 
@@ -530,10 +656,13 @@
       els.fileInput.value = '';
     });
 
-    els.clearBackground.addEventListener('click', function () {
+    els.clearBackground.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
       settings.background.kind = '';
       settings.background.src = '';
       settings.background.name = '';
+      settings.background.size = 0;
       saveSettings();
       refreshBackground();
     });
@@ -543,6 +672,48 @@
       saveSettings();
       refreshOpacity();
     });
+  }
+
+  function startShortcutRecording(event) {
+    if (event) {
+      event.preventDefault();
+    }
+
+    if (shortcutRecording) {
+      stopShortcutRecording();
+      refreshApplyShortcut();
+      return;
+    }
+
+    shortcutRecording = true;
+    els.applyShortcut.classList.add('is-recording');
+    els.applyShortcutValue.textContent = localizedText('pressShortcutKey', 'Press a key…');
+    document.addEventListener('keydown', captureShortcutKey, true);
+  }
+
+  function captureShortcutKey(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (event.key === 'Escape') {
+      stopShortcutRecording();
+      refreshApplyShortcut();
+      return;
+    }
+
+    settings.applyShortcutKey = normalizeApplyShortcutKey(event.key || 'Alt');
+    stopShortcutRecording();
+    saveSettings();
+    refreshApplyShortcut();
+  }
+
+  function stopShortcutRecording() {
+    shortcutRecording = false;
+    document.removeEventListener('keydown', captureShortcutKey, true);
+
+    if (els.applyShortcut) {
+      els.applyShortcut.classList.remove('is-recording');
+    }
   }
 
   function bindProfileEvents() {
@@ -746,6 +917,21 @@
       els.language.value = normalizeLanguage(settings.language);
     }
     els.autoApply.checked = settings.autoApply;
+    refreshApplyShortcut();
+    if (els.liquidGlassApply) {
+      els.liquidGlassApply.checked = settings.liquidGlassApply;
+    }
+    if (els.motionToolTextLabels) {
+      els.motionToolTextLabels.checked = settings.motionToolTextLabels;
+    }
+    if (els.placeNewNullAtTop) {
+      els.placeNewNullAtTop.checked = settings.placeNewNullAtTop;
+    }
+    for (var visibilityIndex = 0; visibilityIndex < els.flowPageVisibility.length; visibilityIndex++) {
+      var visibilityInput = els.flowPageVisibility[visibilityIndex];
+      var visibilityKey = visibilityInput.getAttribute('data-flow-page-visibility');
+      visibilityInput.checked = settings.flowPageVisibility[visibilityKey] !== false;
+    }
     els.hideHomeIndicator.checked = settings.hideHomeIndicator;
     if (els.backgroundEffect) {
       els.backgroundEffect.value = normalizeBackgroundEffect(settings.backgroundEffect, settings.disableSnowflake);
@@ -758,6 +944,16 @@
     }
 
     resizeSettingsWindow(2);
+  }
+
+  function refreshApplyShortcut() {
+    if (!els.applyShortcutValue || shortcutRecording) {
+      return;
+    }
+
+    var label = getShortcutDisplayName(settings.applyShortcutKey) + ' ×2';
+    els.applyShortcutValue.textContent = label;
+    els.applyShortcut.setAttribute('title', localizedText('changeApplyShortcut', 'Change Apply shortcut') + ': ' + label);
   }
 
   function refreshProfile() {
@@ -882,6 +1078,14 @@
   }
 
   function refreshBackground() {
+    if (previewMedia && previewMedia.tagName && previewMedia.tagName.toLowerCase() === 'video') {
+      try {
+        previewMedia.pause();
+      } catch (error) {}
+    }
+
+    previewMedia = null;
+
     while (els.dropPreview.firstChild) {
       els.dropPreview.removeChild(els.dropPreview.firstChild);
     }
@@ -889,31 +1093,103 @@
     if (!settings.background.src) {
       els.dropzone.classList.remove('has-media');
       els.dropEmpty.style.display = '';
+      setMediaStatus('', '');
       resizeSettingsWindow(2);
       return;
     }
 
     var media = settings.background.kind === 'video' ? document.createElement('video') : document.createElement('img');
-    media.src = settings.background.src;
     media.alt = '';
+    previewMedia = media;
+    setMediaStatus(localizedText('mediaChecking', 'Checking media…'), '');
 
     if (media.tagName.toLowerCase() === 'video') {
       media.muted = true;
       media.loop = true;
       media.autoplay = true;
       media.playsInline = true;
+      media.addEventListener('loadedmetadata', function () {
+        if (previewMedia !== media) {
+          return;
+        }
+        showMediaReadyStatus(media);
+        safePlayPreviewMedia(media);
+      });
+    } else {
+      media.addEventListener('load', function () {
+        if (previewMedia !== media) {
+          return;
+        }
+        showMediaReadyStatus(media);
+      });
     }
 
+    media.addEventListener('error', function () {
+      if (previewMedia !== media) {
+        return;
+      }
+      setMediaStatus(localizedText('mediaDecodeError', 'This file could not be decoded. Try H.264 MP4 (yuv420p), PNG, JPG, or GIF.'), 'error');
+    });
+
+    media.src = settings.background.src;
     els.dropPreview.appendChild(media);
     media.style.opacity = String(clamp(settings.background.opacity, 0, 100) / 100);
-    try {
-      if (media.play) {
-        media.play();
-      }
-    } catch (error) {}
+    safePlayPreviewMedia(media);
     els.dropzone.classList.add('has-media');
     els.dropEmpty.style.display = 'none';
     resizeSettingsWindow(2);
+  }
+
+  function showMediaReadyStatus(media) {
+    var size = Number(settings.background.size) || 0;
+    var isVideo = media && media.tagName && media.tagName.toLowerCase() === 'video';
+    var width = isVideo ? media.videoWidth : media.naturalWidth;
+    var height = isVideo ? media.videoHeight : media.naturalHeight;
+    var details = width && height ? width + '×' + height : '';
+
+    if (isVideo && isFinite(media.duration) && media.duration > 0) {
+      details += (details ? ' · ' : '') + Math.round(media.duration * 10) / 10 + 's';
+    }
+
+    if (size) {
+      details += (details ? ' · ' : '') + formatFileSize(size);
+    }
+
+    if (size > 50 * 1024 * 1024) {
+      setMediaStatus(localizedText('mediaLargeWarning', 'Large media can slow Flow. Consider a smaller or lower-resolution file.') + (details ? ' ' + details : ''), 'warning');
+      return;
+    }
+
+    setMediaStatus(localizedText('mediaReady', 'Media ready.') + (details ? ' ' + details : ''), '');
+  }
+
+  function safePlayPreviewMedia(media) {
+    if (!media || typeof media.play !== 'function') {
+      return;
+    }
+
+    try {
+      var result = media.play();
+      if (result && typeof result.catch === 'function') {
+        result.catch(function () {});
+      }
+    } catch (error) {}
+  }
+
+  function setMediaStatus(message, type) {
+    if (!els.mediaStatus) {
+      return;
+    }
+
+    els.mediaStatus.textContent = message || '';
+    els.mediaStatus.classList.toggle('is-visible', !!message);
+    els.mediaStatus.classList.toggle('is-error', type === 'error');
+    els.mediaStatus.classList.toggle('is-warning', type === 'warning');
+  }
+
+  function formatFileSize(bytes) {
+    bytes = Math.max(0, Number(bytes) || 0);
+    return bytes >= 1024 * 1024 ? (Math.round(bytes / 1024 / 1024 * 10) / 10) + ' MB' : Math.max(1, Math.round(bytes / 1024)) + ' KB';
   }
 
   function refreshOpacity() {
@@ -1013,10 +1289,32 @@
 
     var name = String(file.name || '');
     var type = String(file.type || '');
-    var isVideo = /\.mp4$/i.test(name) || type === 'video/mp4';
+    var isVideo = /\.mp4$/i.test(name) || /^video\/mp4(?:$|;)/i.test(type);
     var allowed = isVideo || /\.(png|jpe?g|gif)$/i.test(name) || /^image\/(png|jpeg|gif)$/i.test(type);
 
     if (!allowed) {
+      setMediaStatus(localizedText('mediaUnsupported', 'Unsupported file. Use H.264 MP4, PNG, JPG, or GIF.'), 'error');
+      return;
+    }
+
+    if (isVideo) {
+      var videoProbe = document.createElement('video');
+      if (typeof videoProbe.canPlayType === 'function' && videoProbe.canPlayType('video/mp4') === '') {
+        setMediaStatus(localizedText('mediaUnsupported', 'Unsupported file. Use H.264 MP4, PNG, JPG, or GIF.'), 'error');
+        return;
+      }
+    }
+
+    if (Number(file.size) > 50 * 1024 * 1024) {
+      setMediaStatus(localizedText('mediaLargeWarning', 'Large media can slow Flow. Consider a smaller or lower-resolution file.'), 'warning');
+    } else {
+      setMediaStatus(localizedText('mediaChecking', 'Checking media…'), '');
+    }
+
+    var mediaSize = Math.max(0, Number(file.size) || 0);
+
+    if (!name) {
+      setMediaStatus(localizedText('mediaUnsupported', 'Unsupported file. Use H.264 MP4, PNG, JPG, or GIF.'), 'error');
       return;
     }
 
@@ -1026,6 +1324,7 @@
       settings.background.kind = isVideo ? 'video' : 'image';
       settings.background.src = mediaSrc;
       settings.background.name = name;
+      settings.background.size = mediaSize;
       saveSettings();
       refreshBackground();
       return;
@@ -1037,8 +1336,13 @@
       settings.background.kind = isVideo ? 'video' : 'image';
       settings.background.src = String(reader.result || '');
       settings.background.name = name;
+      settings.background.size = mediaSize;
       saveSettings();
       refreshBackground();
+    };
+
+    reader.onerror = function () {
+      setMediaStatus(localizedText('mediaReadError', 'Could not read this file.'), 'error');
     };
 
     reader.readAsDataURL(file);

@@ -682,6 +682,59 @@ body[data-flow-background-effect='particles'] .flow-particles {
   stroke-linejoin: round;
   stroke-width: 1.65;
 }
+
+.curve-graph-undo {
+  appearance: none;
+  align-items: center;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.68);
+  cursor: pointer;
+  display: flex;
+  flex: 0 0 28px;
+  height: 28px;
+  justify-content: center;
+  max-width: 28px;
+  outline: none;
+  padding: 0;
+  position: relative;
+  transition: background-color var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal), color var(--transition-normal), opacity var(--transition-normal), transform var(--transition-fast);
+  width: 28px;
+}
+
+.curve-graph-undo:hover:not(:disabled),
+.curve-graph-undo:focus-visible {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-separator-strong);
+  box-shadow: 0 0 14px var(--curve-theme-soft, rgba(255, 255, 255, 0.14));
+  color: var(--curve-theme-color, #ffffff);
+}
+
+.curve-graph-undo:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.curve-graph-undo:disabled {
+  cursor: default;
+  opacity: 0.24;
+  pointer-events: none;
+}
+
+.curve-graph-undo svg {
+  display: block;
+  height: 13px;
+  width: 13px;
+}
+
+.curve-graph-undo path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
 #controls {
   border: 0;
   display: flex;
@@ -748,14 +801,16 @@ body[data-flow-background-effect='particles'] .flow-particles {
   display: block;
   height: 2px;
   opacity: 0.62;
-  transition: opacity var(--transition-normal), box-shadow var(--transition-normal), width var(--transition-normal);
+  transform: scaleX(1);
+  transform-origin: center;
+  transition: opacity var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
   width: 34px;
 }
 
 #divider:hover::before {
   box-shadow: 0 0 16px var(--curve-theme-glow, rgba(255, 255, 255, 0.42));
   opacity: 1;
-  width: 40px;
+  transform: scaleX(1.18);
 }
 
 #divider i {
@@ -774,6 +829,75 @@ body[data-flow-background-effect='particles'] .flow-particles {
   z-index: 3;
 }
 
+#curvePreviewStrip {
+  align-items: center;
+  display: block;
+  flex: 0 0 auto;
+  height: 24px;
+  padding: 14px 14px 1px;
+  pointer-events: auto;
+  position: relative;
+  width: 100%;
+  z-index: 3;
+}
+
+#curvePreviewStrip[hidden],
+#easeDirectionControl[hidden],
+#easeDirectionControl label[hidden],
+#libraryIOButtons .button[hidden] {
+  display: none !important;
+}
+
+#curvePreviewStrip[hidden] + #libraryIO {
+  margin-top: 10px;
+}
+
+#curvePreviewTrack {
+  background: rgba(0, 0, 0, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  height: 8px;
+  overflow: visible;
+  pointer-events: none;
+  position: relative;
+  width: 100%;
+}
+
+#curvePreviewTrail {
+  background: rgba(255, 255, 255, 0.24);
+  border-radius: inherit;
+  height: 3px;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%) scaleX(0);
+  transform-origin: left center;
+  transition: opacity 120ms ease-out;
+  width: 100%;
+}
+
+#curvePreviewBall {
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08), 0 0 18px rgba(255, 255, 255, 0.48);
+  height: 8px;
+  left: 0;
+  position: absolute;
+  top: 50%;
+  transform: translate3d(-4px, -50%, 0);
+  width: 8px;
+}
+
+body.curve-preview-playing #curvePreviewTrail {
+  opacity: 1;
+  will-change: transform;
+}
+
+body.curve-preview-playing #curvePreviewBall {
+  will-change: transform;
+}
+
 #library {
   align-content: start;
   display: grid;
@@ -788,9 +912,9 @@ body[data-flow-background-effect='particles'] .flow-particles {
 #libraryIO {
   align-items: center;
   border-bottom: 1px solid var(--color-separator);
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
   gap: 6px;
+  grid-template-columns: minmax(0, 1fr) auto;
   min-height: 42px;
   min-width: 0;
   padding: 7px 8px;
@@ -799,13 +923,13 @@ body[data-flow-background-effect='particles'] .flow-particles {
 #libraryIOButtons {
   align-items: center;
   display: flex;
-  flex: 0 0 180px;
+  flex: 0 0 auto;
   flex-wrap: nowrap;
   gap: 2px;
-  min-width: 180px;
-  max-width: 180px;
+  min-width: 0;
+  max-width: 206px;
   white-space: nowrap;
-  width: 180px;
+  width: 206px;
 }
 
 #ddLibraries {
@@ -828,7 +952,7 @@ body[data-flow-background-effect='particles'] .flow-particles {
   text-overflow: ellipsis;
   transition: background-color var(--transition-normal), border-color var(--transition-normal), color var(--transition-normal);
   white-space: nowrap;
-  width: 0;
+  width: 100%;
 }
 
 #ddLibraries:hover,
@@ -888,6 +1012,28 @@ body[data-flow-background-effect='particles'] .flow-particles {
 .curve-graph-background.use-original-color img,
 .curve-graph-background.use-original-color video {
   filter: none;
+}
+
+.curve-graph-media-status {
+  align-items: center;
+  background: rgba(5, 5, 8, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  color: rgba(255, 255, 255, 0.8);
+  display: none;
+  font-size: 9px;
+  inset: auto 28px 5px 28px;
+  justify-content: center;
+  line-height: 1.35;
+  padding: 5px 7px;
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
+  z-index: 9;
+}
+
+.curve-graph-media-status.is-visible {
+  display: flex;
 }
 
 #curveModePreview {
@@ -1187,82 +1333,38 @@ body.curve-mode-preview-active.curve-speed-graph-active.curve-mode-bezier #graph
   transform: translateY(0);
 }
 
-#curvePreviewStrip {
-  align-items: center;
-  display: block;
-  flex: 0 0 auto;
-  height: 24px;
-  pointer-events: auto;
-  padding: 14px 14px 1px;
-  position: relative;
-  width: 100%;
-  z-index: 3;
-}
-
-#curvePreviewStrip::before {
-  content: '';
-  display: none;
-}
-
-#curvePreviewStrip:hover::before,
-body.curve-divider-dragging #curvePreviewStrip::before {
-  display: none;
-}
-
-#curvePreviewTrack {
-  pointer-events: none;
-  background: rgba(0, 0, 0, 0.58);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  height: 8px;
-  overflow: visible;
-  position: relative;
-  width: 100%;
-}
-
-#curvePreviewTrail {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: inherit;
-  height: 3px;
-  left: 0;
-  opacity: 0;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0;
-}
-
-#curvePreviewBall {
-  background: #ffffff;
-  border-radius: 50%;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08), 0 0 18px rgba(255, 255, 255, 0.48);
-  height: 8px;
-  left: 0;
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 8px;
+#btn_motionToolsMode i,
+#btn_expressionMode i {
+  font-size: 10px;
 }
 
 #btn_curvePreview i {
   font-size: 11px;
 }
 
-#btn_motionToolsMode i,
-#btn_expressionMode i {
-  font-size: 10px;
+#btn_emojiBrowserMode svg {
+  fill: none;
+  height: 13px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  width: 13px;
+}
+
+#btn_emojiBrowserMode .emoji-browser-mode__eye {
+  fill: currentColor;
+  stroke: none;
 }
 
 #btn_motionToolsMode.is-active,
-#btn_expressionMode.is-active {
+#btn_expressionMode.is-active,
+#btn_curvePreview.is-active,
+#btn_emojiBrowserMode.is-active {
   background: rgba(255, 255, 255, 0.13);
   border-color: var(--curve-theme-color, #ffffff);
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.24);
   color: var(--curve-theme-color, #ffffff);
-}
-
-body.curve-preview-playing #curvePreviewTrail {
-  opacity: 1;
 }
 
 #curveExpressionPanel {
@@ -1289,6 +1391,326 @@ body.curve-preview-playing #curvePreviewTrail {
 
 #motionToolsPanel[hidden] {
   display: none;
+}
+
+#emojiBrowserPanel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#emojiBrowserPanel[hidden] {
+  display: none;
+}
+
+.emoji-browser__controls {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 5px;
+  padding: 7px 7px 0;
+}
+
+.emoji-browser__search {
+  align-items: center;
+  background: rgba(12, 12, 16, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 9px;
+  color: rgba(255, 255, 255, 0.54);
+  display: flex;
+  height: 28px;
+  padding: 0 7px 0 9px;
+  transition: background-color var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.emoji-browser__search:hover {
+  background: rgba(18, 18, 24, 0.74);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.emoji-browser__search:focus-within {
+  background: rgba(18, 18, 24, 0.74);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: none;
+}
+
+.emoji-browser__search > svg {
+  fill: none;
+  flex: 0 0 14px;
+  height: 14px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+  width: 14px;
+}
+
+#emojiSearchInput {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--color-text);
+  flex: 1 1 auto;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  height: 100%;
+  min-width: 0;
+  outline: none;
+  padding: 0 7px;
+}
+
+#emojiSearchInput::-webkit-search-cancel-button {
+  display: none;
+}
+
+#emojiSearchInput::placeholder {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+#emojiSearchClear {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  color: rgba(255, 255, 255, 0.58);
+  cursor: pointer;
+  display: flex;
+  flex: 0 0 20px;
+  height: 20px;
+  justify-content: center;
+  outline: none;
+  padding: 0;
+  width: 20px;
+}
+
+#emojiSearchClear:hover,
+#emojiSearchClear:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text);
+}
+
+#emojiSearchClear[hidden] {
+  display: none;
+}
+
+#emojiSearchClear svg {
+  fill: none;
+  height: 12px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 2;
+  width: 12px;
+}
+
+.emoji-browser__categories {
+  display: flex;
+  gap: 5px;
+  min-height: 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 1px;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+
+.emoji-browser__categories::-webkit-scrollbar {
+  display: none;
+}
+
+.emoji-browser__category {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  color: rgba(255, 255, 255, 0.68);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 600;
+  height: 23px;
+  outline: none;
+  padding: 0 9px;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.emoji-browser__category:hover,
+.emoji-browser__category:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: var(--color-text);
+}
+
+.emoji-browser__category.is-active {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--color-text);
+}
+
+.emoji-browser__summary {
+  align-items: center;
+  color: rgba(255, 255, 255, 0.58);
+  display: flex;
+  flex: 0 0 22px;
+  font-size: 9px;
+  gap: 8px;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 3px 9px 0;
+}
+
+#emojiResultCount {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+#emojiStatus {
+  color: rgba(255, 255, 255, 0.76);
+  min-width: 0;
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.emoji-browser__viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  outline: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+}
+
+.emoji-browser__viewport:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--curve-theme-soft, rgba(255, 255, 255, 0.22));
+}
+
+.emoji-browser__spacer {
+  min-height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.emoji-browser__spacer[hidden] {
+  display: none;
+}
+
+.emoji-browser__grid {
+  contain: layout paint style;
+  display: grid;
+  gap: 4px;
+  left: 7px;
+  position: absolute;
+  right: 7px;
+}
+
+.emoji-browser__item {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  box-shadow: none;
+  contain: layout paint style;
+  cursor: pointer;
+  display: flex;
+  height: 34px;
+  justify-content: center;
+  min-width: 0;
+  outline: none;
+  padding: 3px;
+  position: relative;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.emoji-browser__item:hover,
+.emoji-browser__item:focus-visible {
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: none;
+}
+
+.emoji-browser__item:active {
+  transform: scale(0.94);
+}
+
+.emoji-browser__item img {
+  display: block;
+  height: 24px;
+  object-fit: contain;
+  pointer-events: none;
+  width: 26px;
+}
+
+.emoji-browser__item.is-adding img {
+  opacity: 0.38;
+}
+
+.emoji-browser__item.is-adding::after {
+  animation: emojiBrowserSpin 0.7s linear infinite;
+  border: 2px solid rgba(255, 255, 255, 0.24);
+  border-radius: 50%;
+  border-top-color: var(--color-text);
+  content: '';
+  height: 14px;
+  position: absolute;
+  width: 14px;
+}
+
+.emoji-browser__item.is-added {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.emoji-browser__item.is-error {
+  background: rgba(255, 92, 92, 0.14);
+}
+
+.emoji-browser__empty {
+  align-items: center;
+  color: rgba(255, 255, 255, 0.52);
+  display: flex;
+  flex-direction: column;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: absolute;
+  text-align: center;
+}
+
+.emoji-browser__empty[hidden] {
+  display: none;
+}
+
+.emoji-browser__empty svg {
+  fill: none;
+  height: 30px;
+  margin-bottom: 9px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.5;
+  width: 30px;
+}
+
+.emoji-browser__empty circle:nth-of-type(n + 2) {
+  fill: currentColor;
+  stroke: none;
+}
+
+.emoji-browser__empty strong {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.emoji-browser__empty span {
+  font-size: 9px;
+}
+
+@keyframes emojiBrowserSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .motion-tools-top-row {
@@ -1330,13 +1752,13 @@ body.curve-preview-playing #curvePreviewTrail {
 }
 
 .motion-tools-anchor__button::before {
-  background-image: var(--motion-anchor-image);
+  background-image: var(--motion-anchor-rendered-image, var(--motion-anchor-image));
   background-position: center;
   background-repeat: no-repeat;
   background-size: 20px 20px;
   content: '';
   display: block;
-  filter: grayscale(1) brightness(1.35);
+  filter: drop-shadow(0 0 4px var(--curve-theme-soft, rgba(255, 255, 255, 0.2)));
   height: 20px;
   image-rendering: pixelated;
   pointer-events: none;
@@ -1346,8 +1768,8 @@ body.curve-preview-playing #curvePreviewTrail {
 .motion-tools-anchor__button:hover::before,
 .motion-tools-anchor__button:focus-visible::before,
 .motion-tools-anchor__button.is-ok::before {
-  background-image: var(--motion-anchor-hover-image);
-  filter: grayscale(1) brightness(1.55);
+  background-image: var(--motion-anchor-rendered-hover-image, var(--motion-anchor-hover-image));
+  filter: drop-shadow(0 0 6px var(--curve-theme-soft, rgba(255, 255, 255, 0.3)));
 }
 
 .motion-tools-anchor__button:active {
@@ -1405,7 +1827,70 @@ body.curve-preview-playing #curvePreviewTrail {
   min-width: 0;
   outline: none;
   padding: 5px;
+  position: relative;
   transition: background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.motion-tools-actions > .motion-tools-action {
+  cursor: grab;
+}
+
+.motion-tools-actions > .motion-tools-action[hidden] {
+  display: none;
+}
+
+.motion-tools-actions > .motion-tools-customize {
+  border-style: dashed;
+  cursor: pointer;
+}
+
+.motion-tools-actions > .motion-tools-customize .motion-tools-action__icon {
+  height: 16px;
+  width: 16px;
+}
+
+.motion-tools-actions.motion-tools-reordering > .motion-tools-action {
+  cursor: grabbing;
+}
+
+.motion-tools-actions > .motion-tools-action.is-dragging {
+  opacity: 0.24;
+}
+
+.motion-tools-actions > .motion-tools-action.is-reorder-before::before,
+.motion-tools-actions > .motion-tools-action.is-reorder-after::before {
+  background: var(--curve-theme-color, #ffffff);
+  border-radius: 999px;
+  bottom: 4px;
+  box-shadow: 0 0 7px var(--curve-theme-glow, rgba(255, 255, 255, 0.4));
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  top: 4px;
+  width: 2px;
+  z-index: 2;
+}
+
+.motion-tools-actions > .motion-tools-action.is-reorder-before::before {
+  left: -4px;
+}
+
+.motion-tools-actions > .motion-tools-action.is-reorder-after::before {
+  right: -4px;
+}
+
+.motion-tools-drag-ghost {
+  opacity: 0.92;
+  pointer-events: none;
+  position: fixed;
+  transform: scale(0.98);
+  z-index: 9999;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-tools-actions > .motion-tools-action {
+    transition: background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+  }
 }
 
 .motion-tools-compose__button {
@@ -1527,6 +2012,20 @@ body.curve-preview-playing #curvePreviewTrail {
   width: 19px;
 }
 
+body.motion-tools-text-labels .motion-tools-actions .motion-tools-action[data-prime-tool] .motion-tools-action__icon {
+  display: none;
+}
+
+body.motion-tools-text-labels .motion-tools-actions .motion-tools-action[data-prime-tool]::after {
+  content: attr(data-prime-tool);
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.025em;
+  line-height: 1;
+  pointer-events: none;
+}
+
 
 .motion-tools-secret__icon {
   display: block;
@@ -1592,7 +2091,8 @@ svg.motion-tools-action__icon {
 
 #library[hidden],
 body.curve-expression-mode-active #library,
-body.curve-motion-tools-mode-active #library {
+body.curve-motion-tools-mode-active #library,
+body.curve-emoji-browser-mode-active #library {
   display: none !important;
 }
 
@@ -1891,7 +2391,7 @@ body.curve-expression-scrubbing * {
   background-color: transparent;
   border-color: transparent;
   box-shadow: none;
-  flex-basis: 24px;
+  flex: 0 1 24px;
   height: 24px;
   max-width: 24px;
 }
@@ -1981,6 +2481,30 @@ body.curve-mode-fourkey #btn_expressionMode {
   max-width: none;
   min-width: 0;
   width: 0;
+}
+#btn_applyValues.apply-liquid-glass {
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  backdrop-filter: blur(18px) saturate(1.2);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.075), 0 2px 8px rgba(0, 0, 0, 0.3);
+  color: var(--color-text);
+  overflow: hidden;
+  position: relative;
+  text-shadow: none;
+  transition: background-color var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+#btn_applyValues.apply-liquid-glass:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 12px rgba(255, 255, 255, 0.17);
+}
+
+#btn_applyValues.apply-liquid-glass:active {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.26), 0 1px 5px rgba(0, 0, 0, 0.24);
 }
 #btn_curveSettings {
   background-color: transparent;
@@ -2116,8 +2640,8 @@ input[type='radio']:checked + label svg {
   }
 
   #graphPanel {
-    align-self: center;
-    max-width: 300px;
+    align-self: stretch;
+    max-width: 100%;
     overflow: visible;
   }
 
@@ -2166,7 +2690,6 @@ input[type='radio']:checked + label svg {
 
   #libraryIOButtons {
     justify-content: flex-end;
-    width: 180px;
   }
 }
 
@@ -2241,7 +2764,7 @@ input[type='radio']:checked + label svg {
   }
 
   #libraryIOButtons .button {
-    flex-basis: 24px;
+    flex: 0 1 24px;
     max-width: 24px;
   }
 }

@@ -196,6 +196,6 @@
     observer.observe(nativeSelect, { childList: true, subtree: true, attributes: true });
   }
 
-  window.setInterval(syncOptions, 650);
+  window.setInterval(syncOptions, 1200);
   syncOptions();
 })();

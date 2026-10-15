@@ -17,6 +17,7 @@
   var GRAPH_EDITOR_CHANGED_EVENT = 'com.rendertom.flow.v2.graphEditor.changed';
   var GRAPH_EDITOR_READY_EVENT = 'com.rendertom.flow.v2.graphEditor.ready';
   var GRAPH_EDITOR_CLOSED_EVENT = 'com.rendertom.flow.v2.graphEditor.closed';
+  var APPLY_SHORTCUT_DOUBLE_PRESS_MS = 500;
   var BEZIER_VALUE_MIN = -4;
   var BEZIER_VALUE_MAX = 5;
   var CONTROL_VALUE_MIN = -1;
@@ -48,6 +49,7 @@
     speedGraph: false,
     expressionMode: false,
     motionToolsMode: false,
+    emojiBrowserMode: false,
     expressionScrub: null,
     expressionCopyTimer: null,
     graphEditorActive: false,
@@ -66,7 +68,10 @@
     customControlElements: [],
     suppressCustomDblClick: false,
     previewFrame: null,
-    previewStart: 0,
+    previewResetTimer: null,
+    previewStart: null,
+    previewProgress: 0,
+    previewTrackWidth: 0,
     transition: null,
     transitionFrame: null,
     syncingBezierText: false,
@@ -78,6 +83,17 @@
     curvePresetsByLibrary: {},
     currentLibraryKey: '',
     selectedCurvePresetId: '',
+    graphHistory: [],
+    graphHistoryLimit: 40,
+    pendingGraphHistory: null,
+    historyRestoring: false,
+    applyShortcutLastKey: '',
+    applyShortcutLastAt: 0,
+    applyShortcutBridge: null,
+    applyShortcutBridgeReady: false,
+    applyShortcutBridgeBuffer: '',
+    applyShortcutBridgeKeyCode: 0,
+    backgroundMedia: null,
     settings: getDefaultSettings(),
     settingsRaw: '',
     params: {
@@ -107,6 +123,272 @@
     value = String(value || '').toLowerCase();
 
     return value === 'zh' || value === 'th' ? value : 'en';
+  }
+
+  function normalizeApplyShortcutKey(value) {
+    value = String(value || 'Alt');
+
+    if (value === ' ' || value === 'Spacebar') {
+      return 'Space';
+    }
+
+    if (value === 'Ctrl') {
+      return 'Control';
+    }
+
+    if (value === 'OS') {
+      return 'Meta';
+    }
+
+    if (value.length === 1) {
+      return value.toUpperCase();
+    }
+
+    if (/^(Alt|Control|Shift|Meta|Enter|Space|Tab|Escape|Backspace|Delete|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|F(?:[1-9]|1[0-2]))$/.test(value)) {
+      return value;
+    }
+
+    return 'Alt';
+  }
+
+  function getShortcutEventKey(event) {
+    var key = event && (event.key || event.keyIdentifier || '');
+
+    if (!key && event && event.keyCode) {
+      key = event.keyCode === 18 ? 'Alt' :
+        event.keyCode === 17 ? 'Control' :
+        event.keyCode === 16 ? 'Shift' :
+        event.keyCode === 91 ? 'Meta' :
+        event.keyCode === 32 ? 'Space' : String.fromCharCode(event.keyCode);
+    }
+
+    return normalizeApplyShortcutKey(key);
+  }
+
+  function getShortcutVirtualKeyCode(value) {
+    value = normalizeApplyShortcutKey(value);
+
+    var keyCodes = {
+      Alt: 18,
+      Control: 17,
+      Shift: 16,
+      Meta: 91,
+      Enter: 13,
+      Space: 32,
+      Tab: 9,
+      Escape: 27,
+      Backspace: 8,
+      Delete: 46,
+      ArrowUp: 38,
+      ArrowDown: 40,
+      ArrowLeft: 37,
+      ArrowRight: 39
+    };
+
+    if (Object.prototype.hasOwnProperty.call(keyCodes, value)) {
+      return keyCodes[value];
+    }
+
+    if (/^F(?:[1-9]|1[0-2])$/.test(value)) {
+      return 111 + Number(value.slice(1));
+    }
+
+    return value.length === 1 ? value.toUpperCase().charCodeAt(0) : 0;
+  }
+
+  function registerApplyShortcutInterest() {
+    var keyCode = getShortcutVirtualKeyCode(state.settings.applyShortcutKey);
+
+    if (!keyCode) {
+      return;
+    }
+
+    var interest = JSON.stringify([{ keyCode: keyCode }]);
+
+    try {
+      if (window.__adobe_cep__ && typeof window.__adobe_cep__.registerKeyEventsInterest === 'function') {
+        window.__adobe_cep__.registerKeyEventsInterest(interest);
+        return;
+      }
+    } catch (error) {}
+
+    try {
+      if (window.CSInterface) {
+        var cs = new window.CSInterface();
+        if (cs && typeof cs.registerKeyEventsInterest === 'function') {
+          cs.registerKeyEventsInterest(interest);
+        }
+      }
+    } catch (error) {}
+  }
+
+  function getNodeRequire() {
+    try {
+      if (typeof window.require === 'function') {
+        return window.require;
+      }
+
+      if (typeof require === 'function') {
+        return require;
+      }
+    } catch (error) {}
+
+    return null;
+  }
+
+  function nativeApplyShortcutBridgeSupported() {
+    var nodeRequire = getNodeRequire();
+
+    if (!nodeRequire) {
+      return false;
+    }
+
+    try {
+      return nodeRequire('process').platform === 'win32';
+    } catch (error) {}
+
+    return false;
+  }
+
+  function sendApplyShortcutBridgeConfig() {
+    var child = state.applyShortcutBridge;
+    var keyCode = getShortcutVirtualKeyCode(state.settings.applyShortcutKey);
+
+    if (!child || !state.applyShortcutBridgeReady || !child.stdin || !keyCode) {
+      return;
+    }
+
+    state.applyShortcutBridgeKeyCode = keyCode;
+
+    try {
+      child.stdin.write('CONFIG ' + keyCode + ' ' + APPLY_SHORTCUT_DOUBLE_PRESS_MS + '\n');
+    } catch (error) {
+      state.applyShortcutBridgeReady = false;
+    }
+  }
+
+  function handleApplyShortcutBridgeLine(line, child) {
+    line = String(line || '').replace(/^\s+|\s+$/g, '').toUpperCase();
+
+    if (!line || state.applyShortcutBridge !== child) {
+      return;
+    }
+
+    if (line === 'READY') {
+      state.applyShortcutBridgeReady = true;
+      sendApplyShortcutBridgeConfig();
+      return;
+    }
+
+    if (line === 'APPLY' && els.applyButton && !document.querySelector('.curve-modal')) {
+      state.applyShortcutLastKey = '';
+      state.applyShortcutLastAt = 0;
+      els.applyButton.click();
+    }
+  }
+
+  function handleApplyShortcutBridgeData(data, child) {
+    if (state.applyShortcutBridge !== child) {
+      return;
+    }
+
+    state.applyShortcutBridgeBuffer += String(data || '');
+    var lines = state.applyShortcutBridgeBuffer.split(/\r?\n/);
+    state.applyShortcutBridgeBuffer = lines.pop() || '';
+
+    for (var i = 0; i < lines.length; i += 1) {
+      handleApplyShortcutBridgeLine(lines[i], child);
+    }
+  }
+
+  function clearApplyShortcutBridge(child) {
+    if (state.applyShortcutBridge !== child) {
+      return;
+    }
+
+    state.applyShortcutBridge = null;
+    state.applyShortcutBridgeReady = false;
+    state.applyShortcutBridgeBuffer = '';
+    state.applyShortcutBridgeKeyCode = 0;
+  }
+
+  function startApplyShortcutBridge() {
+    var keyCode = getShortcutVirtualKeyCode(state.settings.applyShortcutKey);
+
+    if (!keyCode || !nativeApplyShortcutBridgeSupported()) {
+      return;
+    }
+
+    if (state.applyShortcutBridge) {
+      if (state.applyShortcutBridgeReady && state.applyShortcutBridgeKeyCode !== keyCode) {
+        sendApplyShortcutBridgeConfig();
+      }
+      return;
+    }
+
+    var nodeRequire = getNodeRequire();
+
+    try {
+      var childProcess = nodeRequire('child_process');
+      var fileSystem = nodeRequire('fs');
+      var nodePath = nodeRequire('path');
+      var helperPath = nodePath.join(getPanelPath(), 'bin', 'flow-shortcut-helper.exe');
+
+      if (!fileSystem.existsSync(helperPath)) {
+        return;
+      }
+
+      var child = childProcess.spawn(helperPath, [], {
+        windowsHide: true,
+        stdio: ['pipe', 'pipe', 'ignore']
+      });
+
+      state.applyShortcutBridge = child;
+      state.applyShortcutBridgeReady = false;
+      state.applyShortcutBridgeBuffer = '';
+
+      if (child.stdout) {
+        child.stdout.setEncoding('utf8');
+        child.stdout.on('data', function (data) {
+          handleApplyShortcutBridgeData(data, child);
+        });
+      }
+
+      child.on('error', function () {
+        clearApplyShortcutBridge(child);
+      });
+
+      child.on('exit', function () {
+        clearApplyShortcutBridge(child);
+      });
+    } catch (error) {
+      state.applyShortcutBridge = null;
+      state.applyShortcutBridgeReady = false;
+    }
+  }
+
+  function stopApplyShortcutBridge() {
+    var child = state.applyShortcutBridge;
+
+    if (!child) {
+      return;
+    }
+
+    clearApplyShortcutBridge(child);
+
+    try {
+      if (child.stdin) {
+        child.stdin.end('QUIT\n');
+      }
+    } catch (error) {}
+
+    window.setTimeout(function () {
+      try {
+        if (!child.killed) {
+          child.kill();
+        }
+      } catch (error) {}
+    }, 300);
   }
 
   function normalizeBackgroundEffect(value, disableSnowflake) {
@@ -161,6 +443,32 @@
     return null;
   }
 
+  function getDefaultFlowPageVisibility() {
+    return {
+      easeOut: true,
+      ease: true,
+      easeIn: true,
+      motionTools: true,
+      expressionMode: true,
+      previewButton: true,
+      emojiBrowser: true,
+      previewBar: true
+    };
+  }
+
+  function mergeFlowPageVisibility(value) {
+    var defaults = getDefaultFlowPageVisibility();
+    var incoming = value || {};
+
+    for (var key in defaults) {
+      if (Object.prototype.hasOwnProperty.call(defaults, key)) {
+        defaults[key] = incoming[key] !== false;
+      }
+    }
+
+    return defaults;
+  }
+
   function getDefaultSettings() {
     return {
       language: 'en',
@@ -191,11 +499,17 @@
       disableSnowflake: false,
       rgbMode: false,
       autoApply: false,
+      liquidGlassApply: false,
+      motionToolTextLabels: false,
+      placeNewNullAtTop: false,
+      applyShortcutKey: 'Alt',
+      flowPageVisibility: getDefaultFlowPageVisibility(),
       background: {
         kind: '',
         src: '',
         name: '',
-        opacity: 15
+        opacity: 15,
+        size: 0
       }
     };
   }
@@ -242,11 +556,17 @@
       disableSnowflake: backgroundEffect === 'none',
       rgbMode: !!merged.rgbMode,
       autoApply: !!merged.autoApply,
+      liquidGlassApply: !!merged.liquidGlassApply,
+      motionToolTextLabels: !!merged.motionToolTextLabels,
+      placeNewNullAtTop: !!merged.placeNewNullAtTop,
+      applyShortcutKey: normalizeApplyShortcutKey(merged.applyShortcutKey || defaults.applyShortcutKey),
+      flowPageVisibility: mergeFlowPageVisibility(merged.flowPageVisibility),
       background: {
         kind: merged.background && merged.background.kind || defaults.background.kind,
         src: merged.background && merged.background.src || defaults.background.src,
         name: merged.background && merged.background.name || defaults.background.name,
-        opacity: typeof (merged.background && merged.background.opacity) === 'number' ? merged.background.opacity : defaults.background.opacity
+        opacity: typeof (merged.background && merged.background.opacity) === 'number' ? merged.background.opacity : defaults.background.opacity,
+        size: Math.max(0, Number(merged.background && merged.background.size) || 0)
       }
     };
   }
@@ -277,6 +597,7 @@
     els.handleB = document.getElementById('curveModeHandleB');
     els.handleC = document.getElementById('curveModeHandleC');
     els.handleD = document.getElementById('curveModeHandleD');
+    els.undoGraphButton = document.getElementById('btn_undoGraph');
     els.readButton = document.getElementById('btn_readValue');
     els.valueButton = document.getElementById('btn_editBezierValues');
     els.speedGraphButton = document.getElementById('btn_speedGraph');
@@ -291,20 +612,32 @@
     els.previewTrack = document.getElementById('curvePreviewTrack');
     els.previewBall = document.getElementById('curvePreviewBall');
     els.previewTrail = document.getElementById('curvePreviewTrail');
+    els.easeDirectionControl = document.getElementById('easeDirectionControl');
+    els.easeOutButton = document.querySelector('label[for="Out"]');
+    els.easeButton = document.querySelector('label[for="Both"]');
+    els.easeInButton = document.querySelector('label[for="In"]');
+    els.emojiBrowserButton = document.getElementById('btn_emojiBrowserMode');
     els.motionToolsPanel = document.getElementById('motionToolsPanel');
     els.expressionPanel = document.getElementById('curveExpressionPanel');
+    els.emojiBrowserPanel = document.getElementById('emojiBrowserPanel');
     els.expressionParams = document.getElementById('curveExpressionParams');
     els.expressionCode = document.getElementById('curveExpressionCode');
     els.expressionCopyButton = document.getElementById('btn_copyExpression');
     els.expressionImportButton = document.getElementById('btn_importExpression');
+    els.libraryPanel = document.getElementById('libraryPanel');
     els.library = document.getElementById('library');
     els.libraryDropdown = document.getElementById('ddLibraries');
+    els.libraryToolbar = document.getElementById('libraryIOButtons');
     els.coordinateLabel = document.createElement('div');
     els.coordinateLabel.className = 'curve-coordinate-label';
     els.coordinateLabel.setAttribute('aria-hidden', 'true');
     els.backgroundLayer = document.createElement('div');
     els.backgroundLayer.className = 'curve-graph-background';
     els.backgroundLayer.setAttribute('aria-hidden', 'true');
+    els.mediaStatus = document.createElement('div');
+    els.mediaStatus.className = 'curve-graph-media-status';
+    els.mediaStatus.setAttribute('role', 'status');
+    els.mediaStatus.setAttribute('aria-live', 'polite');
     els.customLayer = document.createElement('div');
     els.customLayer.className = 'curve-custom-layer';
 
@@ -315,6 +648,7 @@
     els.graphTop.insertBefore(els.backgroundLayer, els.graphTop.firstChild);
     els.graphTop.appendChild(els.customLayer);
     els.graphTop.appendChild(els.coordinateLabel);
+    els.graphTop.appendChild(els.mediaStatus);
 
     if (els.valueButton) {
       state.originalValueText = els.valueButton.textContent;
@@ -327,16 +661,20 @@
     bindFourKeyControls();
     bindCustomEditor();
     bindApply();
+    bindApplyShortcut();
+    bindGraphUndo();
     bindPanelActions();
     bindPreview();
     bindMotionToolsMode();
     bindExpressionMode();
+    bindEmojiBrowserMode();
     bindSpeedGraph();
     bindSettings();
     bindGraphEditor();
     bindDividerOverlay();
     bindBezierValueObserver();
     bindLibraryScope();
+    bindBackgroundMediaResume();
     loadSettings();
     applySettings();
     startSettingsSync();
@@ -344,12 +682,20 @@
     loadCurvePresets();
     setMode('bezier', { animate: false });
     renderCurvePresets();
+    updateUndoGraphButton();
     updateExpressionModeState();
     updateMotionToolsModeState();
 
     window.addEventListener('resize', function () {
       positionDividerOverlay();
+      state.previewTrackWidth = getPreviewTrackWidth();
+      updatePreviewPosition(state.previewProgress);
       render();
+    });
+
+    window.addEventListener('beforeunload', stopApplyShortcutBridge);
+    window.addEventListener('beforeunload', function () {
+      stopPreview(false);
     });
 
     if (window.ResizeObserver) {
@@ -374,9 +720,11 @@
     for (var i = 0; i < els.tabs.length; i++) {
       els.tabs[i].addEventListener('click', function (event) {
         event.preventDefault();
+        var historySnapshot = captureGraphSnapshot();
         state.selectedCurvePresetId = '';
         setMode(event.currentTarget.getAttribute('data-curve-mode'));
         renderCurvePresets();
+        pushGraphUndoSnapshot(historySnapshot);
       });
     }
   }
@@ -491,6 +839,8 @@
       return;
     }
 
+    queueGraphUndoSnapshot();
+
     if (matchesSelector(target, '.curve-custom-anchor')) {
       if (event.detail && event.detail > 1) {
         if (deleteCustomPoint(index)) {
@@ -530,6 +880,7 @@
       return false;
     }
 
+    var historySnapshot = captureGraphSnapshot();
     points.splice(index, 1);
     state.customPointIndex = clamp(index - 1, 0, points.length - 1);
     cancelCurveTransition();
@@ -537,6 +888,7 @@
     updateValueText();
     updateExpressionPanel();
     render();
+    pushGraphUndoSnapshot(historySnapshot);
     return true;
   }
 
@@ -547,6 +899,8 @@
     if (points.length >= 7) {
       return false;
     }
+
+    var historySnapshot = captureGraphSnapshot();
 
     x = clamp(x, 0, 1);
 
@@ -619,6 +973,7 @@
     });
 
     state.customPointIndex = segment + 1;
+    pushGraphUndoSnapshot(historySnapshot);
     return true;
   }
 
@@ -674,7 +1029,238 @@
     }, true);
   }
 
+  function isEditableTarget(target) {
+    if (!target || target === document.body) {
+      return false;
+    }
+
+    var tag = String(target.tagName || '').toLowerCase();
+    return tag === 'input' || tag === 'textarea' || tag === 'select' || target.isContentEditable;
+  }
+
+  function bindApplyShortcut() {
+    document.addEventListener('keydown', function (event) {
+      if (!els.applyButton || event.repeat || isEditableTarget(event.target) || document.querySelector('.curve-modal')) {
+        return;
+      }
+
+      if (state.applyShortcutBridgeReady) {
+        return;
+      }
+
+      var configuredKey = normalizeApplyShortcutKey(state.settings.applyShortcutKey);
+      var eventKey = getShortcutEventKey(event);
+
+      if (eventKey !== configuredKey) {
+        state.applyShortcutLastKey = '';
+        state.applyShortcutLastAt = 0;
+        return;
+      }
+
+      var now = Date.now();
+      var isSecondPress = state.applyShortcutLastKey === eventKey && now - state.applyShortcutLastAt <= APPLY_SHORTCUT_DOUBLE_PRESS_MS;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (isSecondPress) {
+        state.applyShortcutLastKey = '';
+        state.applyShortcutLastAt = 0;
+        els.applyButton.click();
+      } else {
+        state.applyShortcutLastKey = eventKey;
+        state.applyShortcutLastAt = now;
+      }
+    }, true);
+
+    window.addEventListener('blur', function () {
+      state.applyShortcutLastKey = '';
+      state.applyShortcutLastAt = 0;
+    });
+  }
+
+  function captureGraphSnapshot() {
+    var params = {};
+
+    for (var i = 0; i < MODES.length; i += 1) {
+      if (MODES[i] !== 'bezier') {
+        params[MODES[i]] = cloneParams(MODES[i]);
+      }
+    }
+
+    return {
+      mode: state.mode,
+      bezierValues: getCurrentBezierValues(),
+      params: params,
+      speedGraph: !!state.speedGraph,
+      customEndpoint: state.customEndpoint
+    };
+  }
+
+  function getGraphSnapshotSignature(snapshot) {
+    try {
+      return JSON.stringify(snapshot || captureGraphSnapshot());
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function pushGraphUndoSnapshot(snapshot) {
+    if (!snapshot || state.historyRestoring || getGraphSnapshotSignature(snapshot) === getGraphSnapshotSignature()) {
+      return;
+    }
+
+    var last = state.graphHistory.length ? state.graphHistory[state.graphHistory.length - 1] : null;
+
+    if (!last || getGraphSnapshotSignature(last) !== getGraphSnapshotSignature(snapshot)) {
+      state.graphHistory.push(snapshot);
+    }
+
+    if (state.graphHistory.length > state.graphHistoryLimit) {
+      state.graphHistory.splice(0, state.graphHistory.length - state.graphHistoryLimit);
+    }
+
+    updateUndoGraphButton();
+  }
+
+  function queueGraphUndoSnapshot() {
+    if (!state.pendingGraphHistory && !state.historyRestoring) {
+      state.pendingGraphHistory = captureGraphSnapshot();
+    }
+  }
+
+  function commitQueuedGraphUndo() {
+    var snapshot = state.pendingGraphHistory;
+    state.pendingGraphHistory = null;
+    pushGraphUndoSnapshot(snapshot);
+  }
+
+  function updateUndoGraphButton() {
+    if (!els.undoGraphButton) {
+      return;
+    }
+
+    var canUndo = state.graphHistory.length > 0;
+    els.undoGraphButton.disabled = !canUndo;
+    els.undoGraphButton.setAttribute('aria-disabled', canUndo ? 'false' : 'true');
+    els.undoGraphButton.setAttribute('data-tooltip', canUndo ? 'Undo graph edit' : 'Nothing to undo');
+  }
+
+  function restoreGraphSnapshot(snapshot) {
+    if (!snapshot) {
+      return;
+    }
+
+    var fromMode = state.mode;
+    var fromParams = cloneParams(fromMode);
+    state.historyRestoring = true;
+
+    try {
+      cancelBezierClickAnimation();
+      cancelCurveTransition();
+
+      for (var i = 0; i < MODES.length; i += 1) {
+        var mode = MODES[i];
+        if (mode !== 'bezier' && snapshot.params && snapshot.params[mode]) {
+          state.params[mode] = cloneParams(mode, snapshot.params[mode]);
+        }
+      }
+
+      state.bezierValues = snapshot.bezierValues.slice(0, 4);
+      state.originalValueText = formatBezierValues(state.bezierValues);
+      state.speedGraph = !!snapshot.speedGraph;
+      state.customEndpoint = snapshot.customEndpoint === 'end' ? 'end' : 'start';
+      state.selectedCurvePresetId = '';
+      state.renderView = null;
+
+      setMode(snapshot.mode, {
+        fromMode: fromMode,
+        fromParams: fromParams
+      });
+
+      if (snapshot.mode === 'bezier') {
+        setBezierValueText(snapshot.bezierValues);
+        commitBezierToNativeGraph();
+      }
+
+      updateEndpointSelection();
+      updateValueText();
+      updateExpressionPanel();
+      renderCurvePresets();
+      render();
+      publishGraphEditorState(true);
+    } finally {
+      state.historyRestoring = false;
+    }
+  }
+
+  function undoGraph() {
+    if (!state.graphHistory.length) {
+      return;
+    }
+
+    state.pendingGraphHistory = null;
+    restoreGraphSnapshot(state.graphHistory.pop());
+    updateUndoGraphButton();
+  }
+
+  function bindGraphUndo() {
+    if (!els.undoGraphButton) {
+      return;
+    }
+
+    els.undoGraphButton.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      undoGraph();
+    });
+  }
+
+  function bindBackgroundMediaResume() {
+    if (els.graphTop) {
+      els.graphTop.addEventListener('click', function () {
+        if (state.backgroundMedia && state.backgroundMedia.tagName && state.backgroundMedia.tagName.toLowerCase() === 'video') {
+          safePlayMedia(state.backgroundMedia);
+        }
+      });
+    }
+  }
+
+  function safePlayMedia(media) {
+    if (!media || typeof media.play !== 'function') {
+      return;
+    }
+
+    try {
+      var result = media.play();
+
+      if (result && typeof result.then === 'function') {
+        result.then(function () {
+          if (state.backgroundMedia === media) {
+            setGraphMediaStatus('');
+          }
+        }, function () {
+          if (state.backgroundMedia === media) {
+            setGraphMediaStatus('Video preview is paused. Click the panel to resume.');
+          }
+        });
+      }
+    } catch (error) {
+      setGraphMediaStatus('Video preview is paused. Click the panel to resume.');
+    }
+  }
+
+  function setGraphMediaStatus(message) {
+    if (!els.mediaStatus) {
+      return;
+    }
+
+    els.mediaStatus.textContent = message || '';
+    els.mediaStatus.classList.toggle('is-visible', !!message);
+  }
+
   function startDrag(event) {
+    queueGraphUndoSnapshot();
     cancelBezierClickAnimation();
 
     if (event.currentTarget === els.handleA) {
@@ -747,6 +1333,8 @@
     if (sameNumbers(from, to)) {
       return;
     }
+
+    pushGraphUndoSnapshot(captureGraphSnapshot());
 
     state.bezierClickAnimation = {
       from: from,
@@ -899,6 +1487,7 @@
       }
 
       hideCoordinateLabel();
+      commitQueuedGraphUndo();
       return;
     }
 
@@ -919,6 +1508,7 @@
     els.handleC.classList.remove('is-dragging');
     els.handleD.classList.remove('is-dragging');
     hideCoordinateLabel();
+    commitQueuedGraphUndo();
   }
 
   function applyPendingDragUpdate() {
@@ -1173,10 +1763,17 @@
       return;
     }
 
-    els.previewButton.addEventListener('click', function (event) {
+    function activatePreview(event) {
       event.preventDefault();
       event.stopPropagation();
       playPreview();
+    }
+
+    els.previewButton.addEventListener('click', activatePreview);
+    els.previewButton.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+        activatePreview(event);
+      }
     });
   }
 
@@ -1194,7 +1791,9 @@
 
         if (state.expressionMode) {
           state.motionToolsMode = false;
+          state.emojiBrowserMode = false;
           updateMotionToolsModeState();
+          updateEmojiBrowserModeState();
         }
 
         updateExpressionModeState();
@@ -1237,10 +1836,34 @@
 
       if (state.motionToolsMode) {
         state.expressionMode = false;
+        state.emojiBrowserMode = false;
         updateExpressionModeState();
+        updateEmojiBrowserModeState();
       }
 
       updateMotionToolsModeState();
+    });
+  }
+
+  function bindEmojiBrowserMode() {
+    if (!els.emojiBrowserButton) {
+      return;
+    }
+
+    els.emojiBrowserButton.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      state.emojiBrowserMode = !state.emojiBrowserMode;
+
+      if (state.emojiBrowserMode) {
+        state.expressionMode = false;
+        state.motionToolsMode = false;
+        updateExpressionModeState();
+        updateMotionToolsModeState();
+      }
+
+      updateEmojiBrowserModeState();
     });
   }
 
@@ -1257,10 +1880,12 @@
         return;
       }
 
+      var historySnapshot = captureGraphSnapshot();
       state.speedGraph = !state.speedGraph;
       updateSpeedGraphState();
       updateHandleCursors();
       render();
+      pushGraphUndoSnapshot(historySnapshot);
     });
   }
 
@@ -1350,7 +1975,7 @@
       }
     });
 
-    window.setInterval(syncGraphEditorFromStorage, 180);
+    window.setInterval(syncGraphEditorFromStorage, 260);
   }
 
   function addGraphEditorEventListener(type, callback) {
@@ -1600,6 +2225,13 @@
   }
 
   function applyGraphEditorState(payload) {
+    var interactionActive = !!payload.interactionActive;
+    var historySnapshot = interactionActive ? null : captureGraphSnapshot();
+
+    if (interactionActive) {
+      queueGraphUndoSnapshot();
+    }
+
     cancelBezierClickAnimation();
     var nextMode = MODES.indexOf(payload.mode) === -1 ? state.mode : payload.mode;
     var nextBezier = normalizeGraphEditorBezierValues(payload.bezierValues);
@@ -1640,9 +2272,15 @@
 
     render();
     renderCurvePresets();
+
+    if (!interactionActive && state.pendingGraphHistory) {
+      commitQueuedGraphUndo();
+    } else if (!interactionActive) {
+      pushGraphUndoSnapshot(historySnapshot);
+    }
   }
   function bindDividerOverlay() {
-    if (!els.previewStrip || !els.divider || !els.container || !els.graphPanel) {
+    if (!els.libraryPanel || !els.divider || !els.container || !els.graphPanel) {
       return;
     }
 
@@ -1661,7 +2299,7 @@
         positionDividerOverlay();
       });
       dividerResizeObserver.observe(els.container);
-      dividerResizeObserver.observe(els.previewStrip);
+      dividerResizeObserver.observe(els.libraryPanel);
     }
   }
 
@@ -1836,13 +2474,13 @@
   }
 
   function positionDividerOverlay() {
-    if (!els.previewStrip || !els.divider || !els.container) {
+    if (!els.libraryPanel || !els.divider || !els.container) {
       return;
     }
 
-    var stripRect = els.previewStrip.getBoundingClientRect();
+    var libraryRect = els.libraryPanel.getBoundingClientRect();
     var containerRect = els.container.getBoundingClientRect();
-    var top = Math.max(0, stripRect.top - containerRect.top);
+    var top = Math.max(0, libraryRect.top - containerRect.top);
 
     els.divider.style.top = Math.round(top) + 'px';
   }
@@ -1963,7 +2601,7 @@
     });
 
     addCepSettingsListener();
-    window.setInterval(syncSettingsFromStorage, 650);
+    window.setInterval(syncSettingsFromStorage, 900);
   }
 
   function addCepSettingsListener() {
@@ -2038,8 +2676,17 @@
     updateRgbMode();
     applyActiveColors();
     applyHandleAppearance(document.documentElement);
+    applyFlowPageVisibility();
     renderGraphBackground();
     render();
+    registerApplyShortcutInterest();
+    startApplyShortcutBridge();
+
+    if (els.applyButton) {
+      var shortcutLabel = normalizeApplyShortcutKey(state.settings.applyShortcutKey) + ' ×2';
+      els.applyButton.setAttribute('aria-label', 'Apply graph (double-press ' + shortcutLabel + ')');
+      els.applyButton.setAttribute('data-tooltip', 'Apply graph · ' + shortcutLabel);
+    }
 
     if (state.settings.autoApply) {
       window.setTimeout(function () {
@@ -2047,6 +2694,78 @@
           els.applyButton.click();
         }
       }, 60);
+    }
+  }
+
+  function setFlowElementVisible(element, isVisible) {
+    if (element) {
+      element.hidden = !isVisible;
+    }
+  }
+
+  function updateLibraryToolbarWidth() {
+    if (!els.libraryToolbar) {
+      return;
+    }
+
+    var buttons = els.libraryToolbar.querySelectorAll('.button');
+    var visibleButtonCount = 0;
+    var index;
+
+    for (index = 0; index < buttons.length; index += 1) {
+      if (!buttons[index].hidden) {
+        visibleButtonCount += 1;
+      }
+    }
+
+    var buttonWidth = 24;
+    var buttonGap = 2;
+    var naturalWidth = visibleButtonCount > 0
+      ? visibleButtonCount * buttonWidth + (visibleButtonCount - 1) * buttonGap
+      : 0;
+
+    els.libraryToolbar.style.width = Math.min(206, naturalWidth) + 'px';
+  }
+
+  function applyFlowPageVisibility() {
+    var visibility = state.settings.flowPageVisibility || getDefaultFlowPageVisibility();
+    var showAnyEaseDirection = visibility.easeOut || visibility.ease || visibility.easeIn;
+    var modeChanged = false;
+
+    setFlowElementVisible(els.easeOutButton, visibility.easeOut);
+    setFlowElementVisible(els.easeButton, visibility.ease);
+    setFlowElementVisible(els.easeInButton, visibility.easeIn);
+    setFlowElementVisible(els.easeDirectionControl, showAnyEaseDirection);
+    setFlowElementVisible(els.motionToolsButton, visibility.motionTools);
+    setFlowElementVisible(els.expressionButton, visibility.expressionMode);
+    setFlowElementVisible(els.previewButton, visibility.previewButton);
+    setFlowElementVisible(els.emojiBrowserButton, visibility.emojiBrowser);
+    setFlowElementVisible(els.previewStrip, visibility.previewBar);
+    updateLibraryToolbarWidth();
+
+    if (!visibility.motionTools && state.motionToolsMode) {
+      state.motionToolsMode = false;
+      modeChanged = true;
+    }
+
+    if (!visibility.expressionMode && state.expressionMode) {
+      state.expressionMode = false;
+      modeChanged = true;
+    }
+
+    if (!visibility.emojiBrowser && state.emojiBrowserMode) {
+      state.emojiBrowserMode = false;
+      modeChanged = true;
+    }
+
+    if ((!visibility.previewButton || !visibility.previewBar) && (state.previewFrame || state.previewResetTimer)) {
+      stopPreview(true);
+    }
+
+    if (modeChanged) {
+      updateExpressionModeState();
+      updateMotionToolsModeState();
+      updateEmojiBrowserModeState();
     }
   }
 
@@ -2072,9 +2791,18 @@
     root.style.setProperty('--ios-home-indicator-color', colorWithAlphaVar(homeIndicatorColor));
     root.style.setProperty('--ios-home-indicator-glow', hexToRgba(homeIndicatorColor, 0.18));
 
+    if (window.FlowMotionTools && typeof window.FlowMotionTools.refreshAnchorColors === 'function') {
+      window.FlowMotionTools.refreshAnchorColors(themeColor);
+    }
+
     if (els.body) {
       var backgroundEffect = normalizeBackgroundEffect(state.settings.backgroundEffect, state.settings.disableSnowflake);
       els.body.classList.toggle('curve-rgb-mode', state.settings.rgbMode);
+      els.body.classList.toggle('motion-tools-text-labels', !!state.settings.motionToolTextLabels);
+      els.body.classList.toggle('flow-null-at-top-enabled', !!state.settings.placeNewNullAtTop);
+      if (els.applyButton) {
+        els.applyButton.classList.toggle('apply-liquid-glass', !!state.settings.liquidGlassApply);
+      }
       els.body.classList.toggle('ios-home-indicator-hidden', state.settings.hideHomeIndicator);
       els.body.classList.toggle('flow-snow-disabled', backgroundEffect !== 'snow');
       els.body.setAttribute('data-flow-background-effect', backgroundEffect);
@@ -2122,6 +2850,11 @@
     }
 
     function tick(now) {
+      if (!state.settings.rgbMode) {
+        state.rgbFrame = null;
+        return;
+      }
+
       state.rgbHue = now * 0.055 % 360;
       applyActiveColors();
       render();
@@ -2231,6 +2964,9 @@
       els.backgroundLayer.removeChild(els.backgroundLayer.firstChild);
     }
 
+    state.backgroundMedia = null;
+    setGraphMediaStatus('');
+
     els.backgroundLayer.classList.remove('has-color');
     els.backgroundLayer.classList.toggle('use-original-color', state.settings.backgroundMediaColorEnabled);
     els.backgroundLayer.style.backgroundColor = '';
@@ -2251,18 +2987,35 @@
       media.loop = true;
       media.muted = true;
       media.playsInline = true;
+      media.addEventListener('loadeddata', function () {
+        if (state.backgroundMedia !== media) {
+          return;
+        }
+        setGraphMediaStatus('');
+        safePlayMedia(media);
+      });
     } else {
       media = document.createElement('img');
       media.alt = '';
+      media.addEventListener('load', function () {
+        if (state.backgroundMedia !== media) {
+          return;
+        }
+        setGraphMediaStatus('');
+      });
     }
+
+    media.addEventListener('error', function () {
+      if (state.backgroundMedia !== media) {
+        return;
+      }
+      setGraphMediaStatus('Could not decode this background. Try H.264 MP4, PNG, JPG, or GIF.');
+    });
 
     media.src = state.settings.background.src;
     els.backgroundLayer.appendChild(media);
-    try {
-      if (media.play) {
-        media.play();
-      }
-    } catch (error) {}
+    state.backgroundMedia = media;
+    safePlayMedia(media);
   }
 
   function bindBezierValueObserver() {
@@ -2309,6 +3062,9 @@
         'bezier',
         { values: next }
       );
+      var historySnapshot = captureGraphSnapshot();
+      historySnapshot.bezierValues = previous.slice(0, 4);
+      pushGraphUndoSnapshot(historySnapshot);
     });
 
     observer.observe(els.valueButton, { childList: true, characterData: true, subtree: true });
@@ -2346,7 +3102,7 @@
       if (state.currentLibraryKey !== getCurrentLibraryKey()) {
         syncCurvePresetLibrary();
       }
-    }, 650);
+    }, 900);
 
     if (window.MutationObserver && els.library) {
       var renderQueued = false;
@@ -2420,8 +3176,7 @@
     }
 
     updateValueText();
-    updatePreviewPosition(0);
-
+    stopPreview(true);
     if (options.animate !== false) {
       startCurveTransition(previousMode, previousParams, mode, cloneParams(mode));
     } else {
@@ -2651,7 +3406,7 @@
     }
 
     if (els.library) {
-      els.library.hidden = state.expressionMode || state.motionToolsMode;
+      els.library.hidden = state.expressionMode || state.motionToolsMode || state.emojiBrowserMode;
     }
 
     updateExpressionPanel();
@@ -2672,8 +3427,42 @@
     }
 
     if (els.library) {
-      els.library.hidden = state.expressionMode || state.motionToolsMode;
+      els.library.hidden = state.expressionMode || state.motionToolsMode || state.emojiBrowserMode;
     }
+  }
+
+  function updateEmojiBrowserModeState() {
+    if (els.body) {
+      els.body.classList.toggle('curve-emoji-browser-mode-active', state.emojiBrowserMode);
+    }
+
+    if (els.emojiBrowserButton) {
+      els.emojiBrowserButton.classList.toggle('is-active', state.emojiBrowserMode);
+      els.emojiBrowserButton.setAttribute('aria-pressed', state.emojiBrowserMode ? 'true' : 'false');
+    }
+
+    if (els.emojiBrowserPanel) {
+      els.emojiBrowserPanel.hidden = !state.emojiBrowserMode;
+    }
+
+    if (els.library) {
+      els.library.hidden = state.expressionMode || state.motionToolsMode || state.emojiBrowserMode;
+    }
+
+    var modeEvent;
+
+    try {
+      modeEvent = new CustomEvent('flow:emoji-browser-mode', {
+        detail: { active: state.emojiBrowserMode }
+      });
+    } catch (error) {
+      modeEvent = document.createEvent('CustomEvent');
+      modeEvent.initCustomEvent('flow:emoji-browser-mode', false, false, {
+        active: state.emojiBrowserMode
+      });
+    }
+
+    document.dispatchEvent(modeEvent);
   }
 
   function includeRangeY(range, y) {
@@ -4100,6 +4889,8 @@
       return;
     }
 
+    queueGraphUndoSnapshot();
+
     state.expressionScrub = {
       key: key,
       startX: event.clientX,
@@ -4131,7 +4922,6 @@
 
     setExpressionScrubValue(state.expressionScrub.key, next);
     updateValueText();
-    updatePreviewPosition(0);
     render();
     event.preventDefault();
   }
@@ -4150,6 +4940,8 @@
     if (els.body) {
       els.body.classList.remove('curve-expression-scrubbing');
     }
+
+    commitQueuedGraphUndo();
   }
 
   function getExpressionScrubMeta(key) {
@@ -4897,6 +5689,8 @@
   }
 
   function applyImportedExpression(parsed) {
+    var historySnapshot = captureGraphSnapshot();
+
     if (parsed.mode === 'bezier') {
       setMode('bezier', { animate: false });
       setBezierValueText(parsed.params.values);
@@ -4908,6 +5702,7 @@
     state.selectedCurvePresetId = '';
     renderCurvePresets();
     updateExpressionPanel();
+    pushGraphUndoSnapshot(historySnapshot);
   }
 
   function getValueFormatText(mode) {
@@ -4946,6 +5741,7 @@
   }
 
   function applyValueInput(value) {
+    var historySnapshot = captureGraphSnapshot();
     var numbers = parseNumberList(value);
     var p = state.params[state.mode];
 
@@ -5004,9 +5800,9 @@
     }
 
     updateValueText();
-    updatePreviewPosition(0);
     render();
     renderCurvePresets();
+    pushGraphUndoSnapshot(historySnapshot);
     return '';
   }
 
@@ -5326,6 +6122,7 @@
       return;
     }
 
+    var historySnapshot = captureGraphSnapshot();
     var fromMode = state.mode;
     var fromParams = cloneParams(fromMode);
 
@@ -5336,6 +6133,7 @@
       fromParams: fromParams
     });
     renderCurvePresets();
+    pushGraphUndoSnapshot(historySnapshot);
   }
 
   function buildCurvePresetSvg(mode, params) {
@@ -5438,54 +6236,101 @@
     return evaluate(state.mode, t);
   }
 
+  function getPreviewTrackWidth() {
+    if (!els.previewTrack) {
+      return 0;
+    }
+
+    return Math.max(0, els.previewTrack.clientWidth || els.previewTrack.getBoundingClientRect().width || 0);
+  }
+
   function updatePreviewPosition(value) {
     if (!els.previewBall || !els.previewTrail) {
       return;
     }
 
     var progress = clamp(value, 0, 1);
-    var percent = (progress * 100).toFixed(2) + '%';
-    els.previewBall.style.left = percent;
-    els.previewTrail.style.width = percent;
+    var trackWidth = state.previewTrackWidth || getPreviewTrackWidth();
+    var ballOffset = progress * trackWidth - 4;
+
+    state.previewProgress = progress;
+    els.previewBall.style.transform = 'translate3d(' + ballOffset.toFixed(2) + 'px, -50%, 0)';
+    els.previewTrail.style.transform = 'translateY(-50%) scaleX(' + progress.toFixed(4) + ')';
   }
 
-  function playPreview() {
-    if (!els.previewButton || !els.previewBall) {
-      return;
+  function setPreviewPlaying(isPlaying) {
+    if (els.body) {
+      els.body.classList.toggle('curve-preview-playing', isPlaying);
     }
 
-    var cancel = window.cancelAnimationFrame || window.clearTimeout;
-    var raf = window.requestAnimationFrame || function (callback) {
-      return window.setTimeout(function () {
-        callback(Date.now());
-      }, 16);
-    };
+    if (els.previewButton) {
+      els.previewButton.classList.toggle('is-active', isPlaying);
+      els.previewButton.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
+    }
+  }
 
+  function stopPreview(resetPosition) {
     if (state.previewFrame) {
-      cancel(state.previewFrame);
+      getCancelAnimationFrame()(state.previewFrame);
       state.previewFrame = null;
     }
 
-    state.previewStart = 0;
-    els.body.classList.add('curve-preview-playing');
+    if (state.previewResetTimer) {
+      window.clearTimeout(state.previewResetTimer);
+      state.previewResetTimer = null;
+    }
+
+    state.previewStart = null;
+    setPreviewPlaying(false);
+
+    if (resetPosition !== false) {
+      updatePreviewPosition(0);
+    }
+  }
+
+  function getPreviewDuration() {
+    try {
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return 300;
+      }
+    } catch (error) {}
+
+    return 1150;
+  }
+
+  function playPreview() {
+    if (!els.previewButton || !els.previewBall || !els.previewTrail) {
+      return;
+    }
+
+    stopPreview(true);
+    state.previewTrackWidth = getPreviewTrackWidth();
+    state.previewStart = null;
+    setPreviewPlaying(true);
+
+    var duration = getPreviewDuration();
+    var raf = getAnimationFrame();
 
     function tick(now) {
-      if (!state.previewStart) {
+      if (state.previewStart === null) {
         state.previewStart = now;
       }
 
-      var t = clamp((now - state.previewStart) / 1150, 0, 1);
+      var t = clamp((now - state.previewStart) / duration, 0, 1);
       updatePreviewPosition(getPreviewValue(t));
 
       if (t < 1) {
         state.previewFrame = raf(tick);
-      } else {
-        state.previewFrame = null;
-        window.setTimeout(function () {
-          els.body.classList.remove('curve-preview-playing');
-          updatePreviewPosition(0);
-        }, 180);
+        return;
       }
+
+      state.previewFrame = null;
+      state.previewResetTimer = window.setTimeout(function () {
+        state.previewResetTimer = null;
+        state.previewStart = null;
+        setPreviewPlaying(false);
+        updatePreviewPosition(0);
+      }, 180);
     }
 
     state.previewFrame = raf(tick);
@@ -5592,13 +6437,14 @@
           return;
         }
 
+        var historySnapshot = captureGraphSnapshot();
         var fromParams = cloneParams('fourkey');
         state.params.fourkey = cloneParams('fourkey', response.params);
         state.selectedCurvePresetId = '';
         updateValueText();
-        updatePreviewPosition(0);
         startCurveTransition('fourkey', fromParams, 'fourkey', cloneParams('fourkey'));
         renderCurvePresets();
+        pushGraphUndoSnapshot(historySnapshot);
         flashFourKeyReadState(true, response.message || 'Read 4-Key values.');
       });
     });

@@ -1,6 +1,8 @@
 var FlowPrimeTools = FlowPrimeTools || {};
 
 (function () {
+  var actionStatus = null;
+
   function escapeResultText(value) {
     return String(value)
       .replace(/\\/g, '\\\\')
@@ -9,8 +11,18 @@ var FlowPrimeTools = FlowPrimeTools || {};
       .replace(/\n/g, '\\n');
   }
 
-  function result(ok, message) {
-    return '{"ok":' + (ok ? 'true' : 'false') + ',"message":"' + escapeResultText(message || '') + '"}';
+  function result(ok, message, code) {
+    return '{"ok":' + (ok ? 'true' : 'false') + ',"message":"' + escapeResultText(message || '') + '","code":"' + escapeResultText(code || '') + '"}';
+  }
+
+  function setActionStatus(ok, message, code) {
+    actionStatus = {
+      ok: !!ok,
+      message: message || '',
+      code: code || ''
+    };
+
+    return !!ok;
   }
 
   function activeComp() {
@@ -32,14 +44,17 @@ var FlowPrimeTools = FlowPrimeTools || {};
     return layers.length ? layers[0] : null;
   }
 
-  function matchLayerTiming(layer, targetLayer) {
+  function matchLayerTiming(layer, targetLayer, moveBeforeTarget) {
     if (!layer || !targetLayer) {
       return;
     }
 
     layer.inPoint = targetLayer.inPoint;
     layer.outPoint = targetLayer.outPoint;
-    layer.moveBefore(targetLayer);
+
+    if (moveBeforeTarget !== false) {
+      layer.moveBefore(targetLayer);
+    }
   }
 
   function addEffect(layer, matchNames) {
@@ -70,6 +85,145 @@ var FlowPrimeTools = FlowPrimeTools || {};
     }
 
     return applied;
+  }
+
+  function normalizeEffectName(value) {
+    return String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  function containsAllEffectTerms(value, terms) {
+    if (!terms || !terms.length) {
+      return false;
+    }
+
+    for (var i = 0; i < terms.length; i++) {
+      if (value.indexOf(normalizeEffectName(terms[i])) === -1) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  function effectNameIsAlias(value, aliases) {
+    for (var i = 0; i < aliases.length; i++) {
+      if (value === normalizeEffectName(aliases[i])) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function findInstalledEffect(definition) {
+    var catalog = app.effects;
+
+    if (!catalog || typeof catalog.length === 'undefined') {
+      return null;
+    }
+
+    var best = null;
+    var bestScore = -1;
+
+    for (var i = 0; i < catalog.length; i++) {
+      var effect = catalog[i];
+      if (!effect) {
+        continue;
+      }
+
+      var displayName = String(effect.displayName || '');
+      var matchName = String(effect.matchName || '');
+      var displayKey = normalizeEffectName(displayName);
+      var matchKey = normalizeEffectName(matchName);
+      var combined = displayKey + matchKey;
+      var exact = effectNameIsAlias(displayKey, definition.aliases) || effectNameIsAlias(matchKey, definition.aliases);
+
+      if (!exact && !containsAllEffectTerms(combined, definition.terms)) {
+        continue;
+      }
+
+      var score = exact ? 1000 : 100;
+      if (definition.preferVersionTwo) {
+        if (displayKey.indexOf('deepglow2') !== -1 || matchKey.indexOf('deepglow2') !== -1) {
+          score += 500;
+        } else if (/^2(?:\.|$)/.test(String(effect.version || ''))) {
+          score += 80;
+        }
+      }
+
+      if (combined.indexOf('pro') !== -1) {
+        score += 20;
+      }
+
+      if (score > bestScore) {
+        bestScore = score;
+        best = {
+          displayName: displayName || definition.label,
+          matchName: matchName,
+          version: String(effect.version || '')
+        };
+      }
+    }
+
+    return best;
+  }
+
+  function applyEffectDefinition(definition) {
+    var comp = activeComp();
+    var layers = selectedLayers(comp);
+
+    if (!layers.length) {
+      return setActionStatus(false, 'Select at least one layer before applying ' + definition.label + '.', 'no-selection');
+    }
+
+    var installed = findInstalledEffect(definition);
+    var matchNames = [];
+
+    if (installed && installed.matchName) {
+      matchNames.push(installed.matchName);
+    } else if (app.effects && typeof app.effects.length !== 'undefined') {
+      return setActionStatus(false, definition.missingMessage || (definition.label + ' is not installed in After Effects.'), 'missing-effect');
+    } else {
+      matchNames = definition.aliases;
+    }
+
+    var applied = false;
+    for (var i = 0; i < layers.length; i++) {
+      applied = addEffect(layers[i], matchNames) || applied;
+    }
+
+    if (!applied) {
+      return setActionStatus(false, definition.missingMessage || (definition.label + ' is not installed or could not be loaded by After Effects.'), 'missing-effect');
+    }
+
+    var appliedName = installed && installed.displayName ? installed.displayName : definition.label;
+    return setActionStatus(true, appliedName + ' applied.', '');
+  }
+
+  function enableTimeRemap() {
+    var comp = activeComp();
+    var layers = selectedLayers(comp);
+
+    if (!layers.length) {
+      return setActionStatus(false, 'Select at least one footage or precomposition layer.', 'no-selection');
+    }
+
+    var applied = false;
+    for (var i = 0; i < layers.length; i++) {
+      try {
+        if (layers[i].canSetTimeRemapEnabled) {
+          layers[i].timeRemapEnabled = true;
+          applied = true;
+        }
+      } catch (error) {
+      }
+    }
+
+    if (!applied) {
+      return setActionStatus(false, 'Time Remap is not available for the selected layers.', 'unsupported-layer');
+    }
+
+    return setActionStatus(true, 'Time Remap enabled.', '');
   }
 
   function colorFromHex(value) {
@@ -238,15 +392,108 @@ var FlowPrimeTools = FlowPrimeTools || {};
     return true;
   }
 
-  function createNullObject() {
+  function selectionCenterExpression(targets) {
+    var layerIndexes = [];
+
+    for (var i = 0; i < targets.length; i++) {
+      layerIndexes.push(targets[i].index);
+    }
+
+    return [
+      'var flowLayerIndexes = [' + layerIndexes.join(',') + '];',
+      'var flowMinX = 1e20;',
+      'var flowMinY = 1e20;',
+      'var flowMaxX = -1e20;',
+      'var flowMaxY = -1e20;',
+      'function flowIncludePoint(flowPoint) {',
+      '  flowMinX = Math.min(flowMinX, flowPoint[0]);',
+      '  flowMinY = Math.min(flowMinY, flowPoint[1]);',
+      '  flowMaxX = Math.max(flowMaxX, flowPoint[0]);',
+      '  flowMaxY = Math.max(flowMaxY, flowPoint[1]);',
+      '}',
+      'for (var flowIndex = 0; flowIndex < flowLayerIndexes.length; flowIndex++) {',
+      '  var flowLayer = thisComp.layer(flowLayerIndexes[flowIndex]);',
+      '  try {',
+      '    var flowRect = flowLayer.sourceRectAtTime(time, false);',
+      '    var flowLeft = flowRect.left;',
+      '    var flowTop = flowRect.top;',
+      '    var flowRight = flowLeft + flowRect.width;',
+      '    var flowBottom = flowTop + flowRect.height;',
+      '    flowIncludePoint(flowLayer.toComp([flowLeft, flowTop, 0]));',
+      '    flowIncludePoint(flowLayer.toComp([flowRight, flowTop, 0]));',
+      '    flowIncludePoint(flowLayer.toComp([flowLeft, flowBottom, 0]));',
+      '    flowIncludePoint(flowLayer.toComp([flowRight, flowBottom, 0]));',
+      '  } catch (flowBoundsError) {',
+      '    try {',
+      '      flowIncludePoint(flowLayer.toComp(flowLayer.anchorPoint));',
+      '    } catch (flowPointError) {',
+      '      flowIncludePoint(flowLayer.toComp([0, 0, 0]));',
+      '    }',
+      '  }',
+      '}',
+      'flowMinX < 1e20 ? [(flowMinX + flowMaxX) / 2, (flowMinY + flowMaxY) / 2] : value;'
+    ].join('\n');
+  }
+
+  function centerNullOnTargets(nullLayer, targets, comp) {
+    if (!nullLayer) {
+      return;
+    }
+
+    var transform = nullLayer.property('ADBE Transform Group');
+    var anchor = transform && transform.property('ADBE Anchor Point');
+    var position = transform && transform.property('ADBE Position');
+
+    if (anchor) {
+      var anchorValue = anchor.value;
+      anchor.setValue(anchorValue.length > 2 ? [50, 50, anchorValue[2]] : [50, 50]);
+    }
+
+    if (!targets.length || !position || !position.canSetExpression) {
+      return;
+    }
+
+    var center = null;
+
+    try {
+      position.expression = selectionCenterExpression(targets);
+      center = position.valueAtTime(comp.time, false);
+
+      if (position.expressionError) {
+        center = null;
+      }
+    } catch (error) {
+      center = null;
+    } finally {
+      try {
+        position.expression = '';
+      } catch (clearExpressionError) {
+      }
+    }
+
+    if (!center || center.length < 2 || !isFinite(center[0]) || !isFinite(center[1])) {
+      return;
+    }
+
+    position.setValue([center[0], center[1]]);
+  }
+
+  function createNullObject(placement) {
     var comp = activeComp();
     var targets = selectedLayers(comp);
     var target = firstSelectedLayer(comp);
+    var placeAtTop = placement === 'top';
     var layer = comp.layers.addNull(comp.duration);
     layer.name = 'Null';
     layer.label = 1;
     layer.startTime = 0;
-    matchLayerTiming(layer, target);
+    matchLayerTiming(layer, target, !placeAtTop);
+
+    if (placeAtTop && typeof layer.moveToBeginning === 'function') {
+      layer.moveToBeginning();
+    }
+
+    centerNullOnTargets(layer, targets, comp);
 
     for (var i = 0; i < targets.length; i++) {
       targets[i].parent = layer;
@@ -1159,7 +1406,9 @@ var FlowPrimeTools = FlowPrimeTools || {};
     SHA: function () {
       return addEffectToSelection(['ADBE Drop Shadow', 'ADBE Radial Shadow']);
     },
-    NUL: createNullObject,
+    NUL: function (placement) {
+      return createNullObject(placement);
+    },
     CAM: createCamera,
     HUE: function () {
       return addEffectToSelection(['ADBE HUE SATURATION']);
@@ -1178,6 +1427,168 @@ var FlowPrimeTools = FlowPrimeTools || {};
     },
     CURV: function () {
       return addEffectToSelection(['ADBE CurvesCustom', 'ADBE Curves']);
+    },
+    TWX: function () {
+      return applyEffectDefinition({
+        label: 'Twixtor Pro',
+        aliases: ['Twixtor Pro', 'TwixtorPro', 'RE:Vision Twixtor Pro', 'RVE Twixtor Pro'],
+        terms: ['twixtor', 'pro'],
+        missingMessage: 'Twixtor Pro was not found. Install or enable the Twixtor Pro plug-in, restart After Effects, and try again.'
+      });
+    },
+    DGL: function () {
+      return applyEffectDefinition({
+        label: 'Deep Glow',
+        aliases: ['Deep Glow 2', 'DeepGlow2', 'Deep Glow', 'DeepGlow'],
+        terms: ['deep', 'glow'],
+        preferVersionTwo: true,
+        missingMessage: 'Deep Glow 1 or Deep Glow 2 was not found. Install or enable either version, restart After Effects, and try again.'
+      });
+    },
+    TMR: enableTimeRemap,
+    OFL: function () {
+      return applyEffectDefinition({
+        label: 'Optical Flares',
+        aliases: ['VIDEOCOPILOT OpticalFlares', 'Video Copilot Optical Flares', 'Optical Flares', 'OpticalFlares'],
+        terms: ['optical', 'flare'],
+        missingMessage: 'Optical Flares was not found. Install or enable the Video Copilot plug-in, restart After Effects, and try again.'
+      });
+    },
+    EXP: function () {
+      return applyEffectDefinition({
+        label: 'Exposure',
+        aliases: ['ADBE Exposure2'],
+        terms: ['adbe', 'exposure2'],
+        missingMessage: 'The Exposure effect was not found in this After Effects installation.'
+      });
+    },
+    HLF: function () {
+      return applyEffectDefinition({
+        label: 'S_Halftone',
+        aliases: ['S_Halftone', 'S Halftone', 'Sapphire S_Halftone'],
+        terms: ['shalftone'],
+        missingMessage: 'S_Halftone was not found. Install or enable Boris FX Sapphire, restart After Effects, and try again.'
+      });
+    },
+    GRN: function () {
+      return applyEffectDefinition({
+        label: 'S_Grain',
+        aliases: ['S_Grain', 'S Grain', 'Sapphire S_Grain'],
+        terms: ['sgrain'],
+        missingMessage: 'S_Grain was not found. Install or enable Boris FX Sapphire, restart After Effects, and try again.'
+      });
+    },
+    BNW: function () {
+      return applyEffectDefinition({
+        label: 'Black & White',
+        aliases: ['ADBE Black&White'],
+        terms: ['adbe', 'blackwhite'],
+        missingMessage: 'The Black & White effect was not found in this After Effects installation.'
+      });
+    },
+    UNM: function () {
+      return applyEffectDefinition({
+        label: 'Unmult',
+        aliases: ['uni.Unmult', 'Universe Unmult', 'Unmult'],
+        terms: ['unmult'],
+        missingMessage: 'Unmult was not found. Install or enable Red Giant Universe, restart After Effects, and try again.'
+      });
+    },
+    INV: function () {
+      return applyEffectDefinition({
+        label: 'Invert',
+        aliases: ['ADBE Invert', 'Invert'],
+        terms: ['invert'],
+        missingMessage: 'The Invert effect was not found in this After Effects installation.'
+      });
+    },
+    LKS: function () {
+      return applyEffectDefinition({
+        label: 'Magic Bullet Looks',
+        aliases: ['Magic Bullet Looks', 'RG Magic Bullet Looks', 'Looks'],
+        terms: ['magic', 'bullet', 'looks'],
+        missingMessage: 'Magic Bullet Looks was not found. Install or enable Red Giant Magic Bullet, restart After Effects, and try again.'
+      });
+    },
+    KEY: function () {
+      return applyEffectDefinition({
+        label: 'Keylight',
+        aliases: ['Keylight 906', 'Keylight'],
+        terms: ['keylight'],
+        missingMessage: 'The Keylight effect was not found in this After Effects installation.'
+      });
+    },
+    TRN: function () {
+      return applyEffectDefinition({
+        label: 'Transform',
+        aliases: ['ADBE Geometry2', 'Transform'],
+        terms: ['adbe', 'geometry2'],
+        missingMessage: 'The Transform effect was not found in this After Effects installation.'
+      });
+    },
+    BMC: function () {
+      return applyEffectDefinition({
+        label: 'S_BlurMoCurves',
+        aliases: ['S_BlurMoCurves', 'S_BlurMoCurve', 'S BlurMoCurves', 'Sapphire S_BlurMoCurves'],
+        terms: ['sblurmocurve'],
+        missingMessage: 'S_BlurMoCurves was not found. Install or enable Boris FX Sapphire, restart After Effects, and try again.'
+      });
+    },
+    TUR: function () {
+      return applyEffectDefinition({
+        label: 'Turbulent Displace',
+        aliases: ['ADBE Turbulent Displace', 'Turbulent Displace'],
+        terms: ['turbulent', 'displace'],
+        missingMessage: 'The Turbulent Displace effect was not found in this After Effects installation.'
+      });
+    },
+    FLK: function () {
+      return applyEffectDefinition({
+        label: 'S_Flicker',
+        aliases: ['S_Flicker', 'S Flicker', 'Sapphire S_Flicker'],
+        terms: ['sflicker'],
+        missingMessage: 'S_Flicker was not found. Install or enable Boris FX Sapphire, restart After Effects, and try again.'
+      });
+    },
+    RSMB: function () {
+      return applyEffectDefinition({
+        label: 'RSMB',
+        aliases: ['RSMB', 'ReelSmart Motion Blur', 'RE:Vision RSMB'],
+        terms: ['rsmb'],
+        missingMessage: 'RSMB was not found. Install or enable RE:Vision Effects ReelSmart Motion Blur, restart After Effects, and try again.'
+      });
+    },
+    HEAT: function () {
+      return applyEffectDefinition({
+        label: 'uni.Heatwave',
+        aliases: ['uni.Heatwave', 'uni Heatwave', 'Universe Heatwave', 'Heatwave'],
+        terms: ['heatwave'],
+        missingMessage: 'uni.Heatwave was not found. Install or enable Red Giant Universe, restart After Effects, and try again.'
+      });
+    },
+    BCC: function () {
+      return applyEffectDefinition({
+        label: 'BCC Ripple',
+        aliases: ['BCC Ripple', 'BCCRipple'],
+        terms: ['bcc', 'ripple'],
+        missingMessage: 'BCC Ripple was not found. Install or enable Boris FX Continuum, restart After Effects, and try again.'
+      });
+    },
+    LSW: function () {
+      return applyEffectDefinition({
+        label: 'CC Light Sweep',
+        aliases: ['CC Light Sweep', 'CCLightSweep'],
+        terms: ['cclightsweep'],
+        missingMessage: 'The CC Light Sweep effect was not found in this After Effects installation.'
+      });
+    },
+    SHK: function () {
+      return applyEffectDefinition({
+        label: 'S_Shake',
+        aliases: ['S_Shake', 'S Shake', 'Sapphire S_Shake'],
+        terms: ['sshake'],
+        missingMessage: 'S_Shake was not found. Install or enable Boris FX Sapphire, restart After Effects, and try again.'
+      });
     }
   };
 
@@ -1188,10 +1599,16 @@ var FlowPrimeTools = FlowPrimeTools || {};
       return result(false, 'Unknown tool: ' + toolName);
     }
 
+    actionStatus = null;
     app.beginUndoGroup('PrimeTools ' + toolName);
 
     try {
       var applied = actions[toolName](toolArgument);
+
+      if (actionStatus) {
+        return result(actionStatus.ok, actionStatus.message, actionStatus.code);
+      }
+
       return result(!!applied, applied ? toolName + ' applied.' : toolName + ' could not be applied to the current selection.');
     } catch (error) {
       return result(false, error.toString() + (error.line ? ' on line ' + error.line : ''));

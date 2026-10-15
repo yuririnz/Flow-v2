@@ -205,6 +205,10 @@
     }
 
     function tick(now) {
+      if (!homeSettings.rgbMode) {
+        rgbFrame = null;
+        return;
+      }
       setHomeIndicatorColor(hslToHex(now * 0.055 % 360, 100, 64));
       rgbFrame = window.requestAnimationFrame(tick);
     }
@@ -244,7 +248,7 @@
 
     window.setInterval(function () {
       applySettingsRaw(readSettingsRaw());
-    }, 700);
+    }, 1000);
   }
 
   function rubberBand(distance) {

@@ -24,7 +24,7 @@
   border-radius: 16px;
   box-shadow: 0 22px 60px rgba(0, 0, 0, 0.72), inset 0 1px rgba(255, 255, 255, 0.035);
   color: #f7f7f8;
-  font-family: Inter, Arial, sans-serif;
+  font-family: inherit;
   max-width: 290px;
   overflow: hidden;
   padding: 18px;
@@ -200,5 +200,327 @@
 @media (prefers-reduced-motion: reduce) {
   .prime-solid-color-dialog {
     animation: none;
+  }
+}
+
+.prime-motion-tools-overlay {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.72);
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  left: 0;
+  padding: 12px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 100000;
+}
+
+.prime-motion-tools-manager,
+.prime-motion-tools-alert,
+.prime-motion-tools-manager *,
+.prime-motion-tools-alert * {
+  box-sizing: border-box;
+}
+
+.prime-motion-tools-manager,
+.prime-motion-tools-alert {
+  animation: prime-motion-tools-enter 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  background: #111114;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.68);
+  color: #f7f7f8;
+  font-family: inherit;
+  max-width: 304px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.prime-motion-tools-manager {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 24px);
+}
+
+.prime-motion-tools-manager__header {
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  display: flex;
+  flex: 0 0 auto;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 15px 15px 12px;
+}
+
+.prime-motion-tools-manager h2,
+.prime-motion-tools-alert h2 {
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.prime-motion-tools-manager__header p,
+.prime-motion-tools-alert p {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 9px;
+  line-height: 1.45;
+  margin: 5px 0 0;
+}
+
+.prime-motion-tools-manager__close {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  color: rgba(255, 255, 255, 0.68);
+  cursor: pointer;
+  display: flex;
+  flex: 0 0 26px;
+  font-family: inherit;
+  font-size: 17px;
+  height: 26px;
+  justify-content: center;
+  line-height: 1;
+  outline: none;
+  padding: 0 0 2px;
+  width: 26px;
+}
+
+.prime-motion-tools-manager__close:hover,
+.prime-motion-tools-manager__close:focus-visible {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: #fff;
+}
+
+.prime-motion-tools-manager__list {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.prime-motion-tools-manager__list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.prime-motion-tools-manager__list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.19);
+  border-radius: 5px;
+}
+
+.prime-motion-tools-manager__item {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  cursor: pointer;
+  display: grid;
+  gap: 7px;
+  grid-template-columns: 24px minmax(0, 1fr) 30px;
+  min-width: 0;
+  padding: 6px;
+  transition: background-color 0.14s ease, border-color 0.14s ease;
+}
+
+.prime-motion-tools-manager__item:hover {
+  background: rgba(255, 255, 255, 0.075);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.prime-motion-tools-manager__icon {
+  align-items: center;
+  color: #f7f7f7;
+  display: flex;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+
+.prime-motion-tools-manager__icon img,
+.prime-motion-tools-manager__icon svg {
+  display: block;
+  height: 17px;
+  max-width: 17px;
+  object-fit: contain;
+  width: 17px;
+}
+
+.prime-motion-tools-manager__icon svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.prime-motion-tools-manager__copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.prime-motion-tools-manager__copy strong {
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prime-motion-tools-manager__copy > span {
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.prime-motion-tools-manager__item input {
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 1px;
+}
+
+.prime-motion-tools-manager__toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  height: 17px;
+  position: relative;
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+  width: 29px;
+}
+
+.prime-motion-tools-manager__toggle::after {
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  content: '';
+  height: 11px;
+  left: 2px;
+  position: absolute;
+  top: 2px;
+  transition: background-color 0.16s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 11px;
+}
+
+.prime-motion-tools-manager__item input:checked + .prime-motion-tools-manager__toggle {
+  background: rgba(255, 255, 255, 0.86);
+  border-color: #fff;
+}
+
+.prime-motion-tools-manager__item input:checked + .prime-motion-tools-manager__toggle::after {
+  background: #111114;
+  transform: translateX(12px);
+}
+
+.prime-motion-tools-manager__item input:focus + .prime-motion-tools-manager__toggle {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.22);
+}
+
+.prime-motion-tools-manager__footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  display: grid;
+  flex: 0 0 auto;
+  gap: 7px;
+  grid-template-columns: 1fr 1fr;
+  padding: 10px;
+}
+
+.prime-motion-tools-manager__button {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 650;
+  height: 31px;
+  outline: none;
+  padding: 0 10px;
+}
+
+.prime-motion-tools-manager__button.is-secondary {
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.prime-motion-tools-manager__button.is-primary {
+  background: #f4f4f5;
+  border-color: #fff;
+  color: #111114;
+}
+
+.prime-motion-tools-manager__button:hover,
+.prime-motion-tools-manager__button:focus-visible {
+  filter: brightness(1.12);
+}
+
+.prime-motion-tools-alert {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  max-width: 264px;
+  padding: 18px;
+  text-align: center;
+}
+
+.prime-motion-tools-alert__mark {
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.86);
+  display: flex;
+  font-size: 17px;
+  font-weight: 700;
+  height: 34px;
+  justify-content: center;
+  margin-bottom: 11px;
+  width: 34px;
+}
+
+.prime-motion-tools-alert p {
+  margin: 7px 0 15px;
+  max-width: 32ch;
+}
+
+.prime-motion-tools-alert .prime-motion-tools-manager__button {
+  min-width: 94px;
+}
+
+@keyframes prime-motion-tools-enter {
+  from {
+    opacity: 0;
+    transform: translateY(7px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 320px) {
+  .prime-motion-tools-manager__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prime-motion-tools-manager,
+  .prime-motion-tools-alert,
+  .prime-motion-tools-manager__toggle::after {
+    animation: none;
+    transition: none;
   }
 }

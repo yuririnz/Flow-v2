@@ -31,6 +31,10 @@
             <i class="fa-solid fa-hand-pointer"></i>
             <span data-i18n="handles">Handles</span>
           </button>
+          <button class="settings-navigation-item" type="button" data-settings-tab="flow-page">
+            <i class="fa-solid fa-eye"></i>
+            <span data-i18n="flowPage">Flow Page</span>
+          </button>
           <button class="settings-navigation-item" type="button" data-settings-tab="behavior">
             <i class="fa-solid fa-sliders"></i>
             <span data-i18n="behavior">Behavior</span>
@@ -170,6 +174,7 @@
               <input id="settingsOpacity" class="settings-range" type="range" min="0" max="100" step="1" />
 
               <p class="settings-tip" data-i18n="mediaTip">Use low-resolution GIFs, videos, or images for optimal performance.</p>
+              <p class="settings-media-status" id="settingsMediaStatus" role="status" aria-live="polite"></p>
             </div>
           </section>
 
@@ -238,6 +243,84 @@
 
           <section
             class="settings-section"
+            data-settings-section="flow-page"
+            data-settings-title="Flow Page"
+            data-settings-title-key="flowPage"
+            data-settings-description="Choose which controls appear in the main Flow panel."
+            data-settings-description-key="flowPageDescription"
+          >
+            <div class="settings-group">
+              <header class="settings-group-header">
+                <h2 data-i18n="easingControls">Easing Controls</h2>
+                <p data-i18n="easingControlsHint">Show only the easing direction controls you use.</p>
+              </header>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="showEaseOut">Show Ease Out</span>
+                <input type="checkbox" id="settingsShowEaseOut" data-flow-page-visibility="easeOut" checked />
+                <i></i>
+              </label>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="showEase">Show Ease</span>
+                <input type="checkbox" id="settingsShowEase" data-flow-page-visibility="ease" checked />
+                <i></i>
+              </label>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="showEaseIn">Show Ease In</span>
+                <input type="checkbox" id="settingsShowEaseIn" data-flow-page-visibility="easeIn" checked />
+                <i></i>
+              </label>
+            </div>
+
+            <div class="settings-group">
+              <header class="settings-group-header">
+                <h2 data-i18n="libraryToolbar">Library Toolbar</h2>
+                <p data-i18n="libraryToolbarHint">Choose the quick tools shown beside the preset library.</p>
+              </header>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="showMotionTools">Show Motion Tools</span>
+                <input type="checkbox" id="settingsShowMotionTools" data-flow-page-visibility="motionTools" checked />
+                <i></i>
+              </label>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="showExpressionMode">Show Expression Mode</span>
+                <input type="checkbox" id="settingsShowExpressionMode" data-flow-page-visibility="expressionMode" checked />
+                <i></i>
+              </label>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="showPreviewButton">Show Movement Preview Button</span>
+                <input type="checkbox" id="settingsShowPreviewButton" data-flow-page-visibility="previewButton" checked />
+                <i></i>
+              </label>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="showEmojiBrowser">Show Emoji Browser</span>
+                <input type="checkbox" id="settingsShowEmojiBrowser" data-flow-page-visibility="emojiBrowser" checked />
+                <i></i>
+              </label>
+            </div>
+
+            <div class="settings-group">
+              <header class="settings-group-header">
+                <h2 data-i18n="movementPreview">Movement Preview</h2>
+                <p data-i18n="movementPreviewHint">Control the preview strip above the preset library.</p>
+              </header>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="showPreviewBar">Show Movement Preview Bar</span>
+                <input type="checkbox" id="settingsShowPreviewBar" data-flow-page-visibility="previewBar" checked />
+                <i></i>
+              </label>
+            </div>
+          </section>
+
+          <section
+            class="settings-section"
             data-settings-section="behavior"
             data-settings-title="Behavior"
             data-settings-title-key="behavior"
@@ -265,6 +348,45 @@
               <label class="settings-toggle-row">
                 <span data-i18n="autoApply">Auto Apply</span>
                 <input type="checkbox" id="settingsAutoApply" />
+                <i></i>
+              </label>
+
+              <div class="settings-language-row settings-shortcut-row">
+                <span class="settings-language-copy">
+                  <b data-i18n="applyShortcut">Apply Shortcut</b>
+                  <small data-i18n="applyShortcutHint">Double-press this key to apply the current graph.</small>
+                </span>
+                <span class="settings-shortcut-control">
+                  <button type="button" id="settingsApplyShortcut" aria-label="Change Apply shortcut" data-i18n-aria="changeApplyShortcut">
+                    <span id="settingsApplyShortcutValue">Alt ×2</span>
+                  </button>
+                  <button type="button" id="settingsResetApplyShortcut" aria-label="Reset Apply shortcut" data-i18n-aria="resetApplyShortcut">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M8 7H4V3" />
+                      <path d="M4 7c2.1-2.5 5.1-3.8 8.2-3.3 4 .6 7 4.1 7 8.3a8 8 0 0 1-8 8c-3.4 0-6.3-2.1-7.5-5.1" />
+                    </svg>
+                  </button>
+                </span>
+              </div>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="liquidGlassApply">Liquid Glass Apply Button</span>
+                <input type="checkbox" id="settingsLiquidGlassApply" />
+                <i></i>
+              </label>
+
+              <label class="settings-toggle-row">
+                <span data-i18n="motionToolTextLabels">Use Text Labels for Motion Tools</span>
+                <input type="checkbox" id="settingsMotionToolTextLabels" />
+                <i></i>
+              </label>
+
+              <label class="settings-toggle-row settings-toggle-row--described">
+                <span class="settings-language-copy">
+                  <b data-i18n="placeNewNullAtTop">Place New Null at Top</b>
+                  <small data-i18n="placeNewNullAtTopHint">When off, the null is placed directly above the selected layer.</small>
+                </span>
+                <input type="checkbox" id="settingsPlaceNewNullAtTop" />
                 <i></i>
               </label>
 

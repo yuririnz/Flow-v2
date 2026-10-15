@@ -152,6 +152,125 @@
 }
 
 .preset.dragging {
-  cursor: move;
-  opacity: 0.5;
+  cursor: grabbing;
+  opacity: 0.2;
+  transform: scale(0.98);
+  transition-duration: 140ms;
+}
+
+.preset-library-reordering .preset:not(.dragging):hover {
+  transform: none;
+}
+
+.preset-drag-ghost {
+  cursor: grabbing;
+  left: -10000px !important;
+  margin: 0 !important;
+  opacity: 0.96 !important;
+  pointer-events: none;
+  position: fixed !important;
+  top: -10000px !important;
+  transform: scale(1.04) !important;
+  z-index: 100000;
+}
+
+.preset-drag-ghost .svgContainer {
+  background: rgba(18, 18, 20, 0.96);
+  border-color: rgba(255, 255, 255, 0.36);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.48);
+}
+
+.preset-drag-ghost .deleteButton {
+  display: none !important;
+}
+
+.preset.flow-preset-drop-before .svgContainer,
+.preset.flow-preset-drop-after .svgContainer {
+  border-color: var(--curve-theme-color, rgba(255, 255, 255, 0.78));
+  box-shadow: 0 0 14px var(--curve-theme-soft, rgba(255, 255, 255, 0.18));
+}
+
+.preset.flow-preset-drop-before::before,
+.preset.flow-preset-drop-after::after {
+  background: var(--curve-theme-color, #ffffff);
+  border-radius: 999px;
+  box-shadow: 0 0 8px var(--curve-theme-glow, rgba(255, 255, 255, 0.4));
+  content: '';
+  height: 62%;
+  opacity: 0.9;
+  position: absolute;
+  top: 9%;
+  width: 2px;
+  z-index: 4;
+}
+
+.preset.flow-preset-drop-before::before {
+  left: -4px;
+}
+
+.preset.flow-preset-drop-after::after {
+  right: -4px;
+}
+
+.preset .preset-favorite-indicator {
+  align-items: center;
+  color: var(--curve-theme-color, #ffffff);
+  display: flex;
+  filter: drop-shadow(0 0 4px var(--curve-theme-glow, rgba(255, 255, 255, 0.48)));
+  height: 11px;
+  justify-content: center;
+  left: 1px;
+  opacity: 0.9;
+  padding: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 1px;
+  width: 11px;
+  z-index: 3;
+}
+
+.preset .preset-favorite-indicator svg {
+  display: block;
+  height: 9px;
+  padding: 0;
+  width: 9px;
+}
+
+.preset .preset-favorite-indicator path,
+.preset.is-favorite:hover .preset-favorite-indicator path,
+.preset.is-favorite.selected .preset-favorite-indicator path {
+  fill: currentColor;
+  filter: none;
+  stroke: none;
+}
+
+.preset-manager-status {
+  background: rgba(8, 8, 12, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  bottom: 8px;
+  color: var(--color-text);
+  font-size: 9px;
+  left: 50%;
+  opacity: 0;
+  padding: 6px 9px;
+  pointer-events: none;
+  position: absolute;
+  transform: translate(-50%, 4px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  white-space: nowrap;
+  z-index: 20;
+}
+
+.preset-manager-status.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preset.dragging,
+  .preset-drag-ghost {
+    transform: none !important;
+    transition-duration: 0ms;
+  }
 }
